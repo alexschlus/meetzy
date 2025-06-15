@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormItem, FormLabel, FormControl, FormMessage, FormField } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
