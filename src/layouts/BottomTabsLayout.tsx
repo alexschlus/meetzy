@@ -30,10 +30,10 @@ export default function BottomTabsLayout() {
   
   return (
     <div className="relative min-h-screen bg-background flex flex-col font-playfair dark">
-      <main className="flex-1 w-full bg-background pb-16 md:pb-14 glass transition-all duration-300">
+      <main className="flex-1 w-full bg-background pb-24 md:pb-20 glass transition-all duration-300">
         <Outlet />
       </main>
-      <nav className="fixed z-30 left-0 right-0 bottom-0 border-t border-border flex items-stretch justify-center h-16">
+      <nav className="fixed z-30 left-0 right-0 bottom-4 border-t border-border flex items-stretch justify-center h-16">
         <div className="grid grid-cols-3 w-full max-w-2xl mx-auto h-full">
           {TABS.map((tab) => {
             const isActive = location.pathname.startsWith(tab.path);
@@ -67,4 +67,3 @@ export default function BottomTabsLayout() {
     </div>
   );
 }
-
