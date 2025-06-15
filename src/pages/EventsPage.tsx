@@ -1,3 +1,4 @@
+
 import { Calendar } from "lucide-react";
 import { useState } from "react";
 import AddEventDialog from "@/components/AddEventDialog";
@@ -62,10 +63,19 @@ const initialEvents = [
   },
 ];
 
+type Message = {
+  sender: string;
+  text: string;
+  timestamp: string;
+};
+
 export default function EventsPage() {
   const [events, setEvents] = useState(initialEvents);
   const [selectedEvent, setSelectedEvent] = useState<typeof initialEvents[0] | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // NEW: Map of eventId to messages array
+  const [eventMessages, setEventMessages] = useState<Record<number, Message[]>>({});
 
   // Handler to add new event from dialog
   const handleAddEvent = (event: {
@@ -77,20 +87,34 @@ export default function EventsPage() {
     attendees: string[];
   }) => {
     if (!event.date) return;
+    const newId = Math.max(0, ...events.map(e => (typeof e.id === "number" ? e.id : 0))) + 1;
     setEvents(prev => [
       {
         ...event,
-        id: Math.max(0, ...prev.map(e => (typeof e.id === "number" ? e.id : 0))) + 1,
+        id: newId,
         // Store as ISO date string for consistency
         date: event.date.toISOString().slice(0, 10),
       },
       ...prev,
     ]);
+    // Optionally, initialize chat for new event
+    setEventMessages(prev => ({
+      ...prev,
+      [newId]: [],
+    }));
   };
 
   const handleEventClick = (event: typeof initialEvents[0]) => {
     setSelectedEvent(event);
     setDetailsOpen(true);
+  };
+
+  // Handler for sending message in event chat
+  const handleSendMessage = (eventId: number, msg: Message) => {
+    setEventMessages(prev => ({
+      ...prev,
+      [eventId]: [...(prev[eventId] || []), msg],
+    }));
   };
 
   return (
@@ -143,6 +167,10 @@ export default function EventsPage() {
         onOpenChange={open => setDetailsOpen(open)}
         event={selectedEvent}
         friends={friends}
+        messages={selectedEvent && selectedEvent.id ? (eventMessages[selectedEvent.id] || []) : []}
+        onSendMessage={(msg) => {
+          if (selectedEvent && selectedEvent.id) handleSendMessage(selectedEvent.id, msg);
+        }}
       />
     </section>
   );

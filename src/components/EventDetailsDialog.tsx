@@ -1,5 +1,5 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { messageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 type Event = {
   id: number;
@@ -40,6 +40,9 @@ type EventDetailsDialogProps = {
   onOpenChange: (open: boolean) => void;
   event: Event | null;
   friends: Friend[];
+  // new: messages for current event, and send callback
+  messages: Message[];
+  onSendMessage: (msg: Message) => void;
 };
 
 export default function EventDetailsDialog({
@@ -47,17 +50,23 @@ export default function EventDetailsDialog({
   onOpenChange,
   event,
   friends,
+  messages,
+  onSendMessage,
 }: EventDetailsDialogProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [newMsg, setNewMsg] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Demo: Scroll chat to bottom on new message
+  // Scroll chat to bottom on new message
   useEffect(() => {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, open]);
+
+  useEffect(() => {
+    // Clear input on event change or open
+    setNewMsg("");
+  }, [event, open]);
 
   if (!event) return null;
 
@@ -71,14 +80,11 @@ export default function EventDetailsDialog({
     e.preventDefault();
     const trimmed = newMsg.trim();
     if (!trimmed) return;
-    setMessages((msgs) => [
-      ...msgs,
-      {
-        sender: "You",
-        text: trimmed,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      },
-    ]);
+    onSendMessage({
+      sender: "You",
+      text: trimmed,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    });
     setNewMsg("");
   };
 
@@ -140,7 +146,7 @@ export default function EventDetailsDialog({
           <div className="flex flex-col h-64">
             <div className="flex items-center gap-2 mb-2 font-bold text-base">
               <span>Group Chat</span>
-              <messageCircle />
+              <MessageCircle />
             </div>
             <div className="flex-1 bg-muted rounded-md p-2 overflow-y-auto border mb-2">
               {messages.length === 0 ? (
