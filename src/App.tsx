@@ -20,8 +20,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* The landing page "/" does NOT use the BottomTabsLayout */}
+          <Route path="/" element={<Index />} />
+          {/* All other pages use the layout with the tab bar */}
           <Route element={<BottomTabsLayout />}>
-            <Route path="/" element={<Index />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/friends" element={<FriendsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -34,4 +36,3 @@ const App = () => (
 );
 
 export default App;
-
