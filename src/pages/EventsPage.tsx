@@ -3,8 +3,12 @@ import { Calendar } from "lucide-react";
 import { useState } from "react";
 import AddEventDialog from "@/components/AddEventDialog";
 import EventDetailsDialog from "@/components/EventDetailsDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
-// Demo friends for inviting
+// Demo friends for inviting (not stored in Supabase, for now)
 const friends = [
   {
     id: 1,
@@ -32,36 +36,19 @@ const friends = [
   },
 ];
 
-// Initial (demo) events
-const initialEvents = [
-  {
-    id: 1,
-    title: "🎉 Emily's Birthday Dinner",
-    date: "2025-07-16",
-    time: "19:30",
-    location: "Blue Hill Restaurant",
-    description: "",
-    attendees: ["You", "Emily", "Mark", "Sarah"],
-  },
-  {
-    id: 2,
-    title: "🏖️ Beach Volleyball",
-    date: "2025-07-20",
-    time: "17:00",
-    location: "Brighton Beach",
-    description: "",
-    attendees: ["You", "Alex", "Taylor"],
-  },
-  {
-    id: 3,
-    title: "🕹️ Arcade Night",
-    date: "2025-07-22",
-    time: "20:00",
-    location: "Old Town Arcade",
-    description: "",
-    attendees: ["You", "Chris"],
-  },
-];
+// Type for fetching from Supabase (corresponds to new table)
+type SupabaseEvent = {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string | null;
+  description: string | null;
+  attendees: string[]; // stored as jsonb string[]
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+};
 
 type Message = {
   sender: string;
@@ -70,14 +57,80 @@ type Message = {
 };
 
 export default function EventsPage() {
-  const [events, setEvents] = useState(initialEvents);
-  const [selectedEvent, setSelectedEvent] = useState<typeof initialEvents[0] | null>(null);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // State for event details dialog and chat
+  const [selectedEvent, setSelectedEvent] = useState<SupabaseEvent | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // NEW: Map of eventId to messages array
-  const [eventMessages, setEventMessages] = useState<Record<number, Message[]>>({});
+  // Local map: eventId -> messages (for demo chat)
+  const [eventMessages, setEventMessages] = useState<Record<string, Message[]>>({});
 
-  // Handler to add new event from dialog
+  // Fetch all events for this user
+  const {
+    data: events,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["events"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("date", { ascending: false });
+      if (error) throw error;
+      // attendees is json, ensure string[] or []
+      return (
+        data?.map((e) => ({
+          ...e,
+          attendees: Array.isArray(e.attendees) ? e.attendees : [],
+        })) ?? []
+      );
+    },
+    enabled: !!user,
+  });
+
+  // Mutation for adding a new event
+  const addEventMutation = useMutation({
+    mutationFn: async (event: {
+      title: string;
+      date: Date | null;
+      time: string;
+      location: string;
+      description: string;
+      attendees: string[];
+    }) => {
+      if (!user) throw new Error("Not authenticated");
+      if (!event.date) throw new Error("No date");
+      const eventData = {
+        user_id: user.id,
+        title: event.title,
+        date: event.date.toISOString().slice(0, 10),
+        time: event.time,
+        location: event.location,
+        description: event.description || "",
+        attendees: event.attendees, // stores as jsonb
+      };
+      const { data, error } = await supabase
+        .from("events")
+        .insert(eventData)
+        .select()
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ title: "Event added", description: "Your event was created!" });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Could not add event", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Add new event handler, triggers Supabase insert
   const handleAddEvent = (event: {
     title: string;
     date: Date | null;
@@ -86,32 +139,17 @@ export default function EventsPage() {
     description: string;
     attendees: string[];
   }) => {
-    if (!event.date) return;
-    const newId = Math.max(0, ...events.map(e => (typeof e.id === "number" ? e.id : 0))) + 1;
-    setEvents(prev => [
-      {
-        ...event,
-        id: newId,
-        // Store as ISO date string for consistency
-        date: event.date.toISOString().slice(0, 10),
-      },
-      ...prev,
-    ]);
-    // Optionally, initialize chat for new event
-    setEventMessages(prev => ({
-      ...prev,
-      [newId]: [],
-    }));
+    addEventMutation.mutate(event);
   };
 
-  const handleEventClick = (event: typeof initialEvents[0]) => {
+  const handleEventClick = (event: SupabaseEvent) => {
     setSelectedEvent(event);
     setDetailsOpen(true);
   };
 
-  // Handler for sending message in event chat
-  const handleSendMessage = (eventId: number, msg: Message) => {
-    setEventMessages(prev => ({
+  // Handler for sending message in event chat (local only)
+  const handleSendMessage = (eventId: string, msg: Message) => {
+    setEventMessages((prev) => ({
       ...prev,
       [eventId]: [...(prev[eventId] || []), msg],
     }));
@@ -119,7 +157,6 @@ export default function EventsPage() {
 
   // Helper: Render title with colored icon/emote
   function renderEventTitle(title: string) {
-    // Try to split at first whitespace to separate emoji/icon (if present)
     const match = title.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s?(.+)$/u);
     if (match) {
       return (
@@ -131,7 +168,6 @@ export default function EventsPage() {
         </span>
       );
     }
-    // No lead emoji, just render text
     return <span className="text-blue-50">{title}</span>;
   }
 
@@ -141,47 +177,54 @@ export default function EventsPage() {
         <h1 className="text-3xl font-bold flex items-center gap-3 text-blue-200">
           <Calendar className="w-8 h-8 stroke-blue-300 bg-blue-400/20 rounded-full p-1 shadow-glass" /> Upcoming Events
         </h1>
-        <AddEventDialog
-          friends={friends}
-          onAdd={handleAddEvent}
-        />
+        <AddEventDialog friends={friends} onAdd={handleAddEvent} />
       </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map(event => (
-          <button
-            key={event.id}
-            className="bg-glass border border-border shadow-glass rounded-3xl p-6 flex flex-col hover:shadow-lg transition-shadow text-left focus:outline-none"
-            onClick={() => handleEventClick(event)}
-            tabIndex={0}
-          >
-            <h2 className="text-xl font-semibold mb-1">
-              {renderEventTitle(event.title)}
-            </h2>
-            <div className="text-blue-100/80 mb-1">
-              <span>{event.date}</span>
-              {event.time && (
-                <span> • {event.time}</span>
+      {/* Handle loading and errors */}
+      {isLoading ? (
+        <div className="text-blue-100/60 p-10 text-center">Loading your events...</div>
+      ) : isError ? (
+        <div className="text-red-500 p-10 text-center">Error: {error.message}</div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {events && events.length > 0 ? events.map((event) => (
+            <button
+              key={event.id}
+              className="bg-glass border border-border shadow-glass rounded-3xl p-6 flex flex-col hover:shadow-lg transition-shadow text-left focus:outline-none"
+              onClick={() => handleEventClick(event)}
+              tabIndex={0}
+            >
+              <h2 className="text-xl font-semibold mb-1">
+                {renderEventTitle(event.title)}
+              </h2>
+              <div className="text-blue-100/80 mb-1">
+                <span>{event.date}</span>
+                {event.time && (
+                  <span> • {event.time}</span>
+                )}
+                {event.location && (
+                  <span> • {event.location}</span>
+                )}
+              </div>
+              {event.description && (
+                <div className="mb-2 text-sm text-blue-100/70">{event.description}</div>
               )}
-              {event.location && (
-                <span> • {event.location}</span>
-              )}
-            </div>
-            {event.description && (
-              <div className="mb-2 text-sm text-blue-100/70">{event.description}</div>
-            )}
-            <div className="flex flex-wrap gap-2 items-center text-sm mt-2">
-              {event.attendees.map(name => (
-                <span
-                  key={name}
-                  className="bg-blue-300/30 text-blue-100 px-2 py-0.5 rounded-full"
-                >
-                  {name}
-                </span>
-              ))}
-            </div>
-          </button>
-        ))}
-      </div>
+              <div className="flex flex-wrap gap-2 items-center text-sm mt-2">
+                {Array.isArray(event.attendees) && event.attendees.map(name => (
+                  <span
+                    key={name}
+                    className="bg-blue-300/30 text-blue-100 px-2 py-0.5 rounded-full"
+                  >
+                    {name}
+                  </span>
+                ))}
+              </div>
+            </button>
+          )) : (
+            <span className="text-blue-100/60 p-10 col-span-full text-center">No events yet.</span>
+          )}
+        </div>
+      )}
+      {/* Details dialog (chat stays local for now) */}
       <EventDetailsDialog
         open={detailsOpen}
         onOpenChange={open => setDetailsOpen(open)}
