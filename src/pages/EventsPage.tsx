@@ -1,7 +1,7 @@
-
 import { Calendar } from "lucide-react";
 import { useState } from "react";
 import AddEventDialog from "@/components/AddEventDialog";
+import EventDetailsDialog from "@/components/EventDetailsDialog";
 
 // Demo friends for inviting
 const friends = [
@@ -64,6 +64,8 @@ const initialEvents = [
 
 export default function EventsPage() {
   const [events, setEvents] = useState(initialEvents);
+  const [selectedEvent, setSelectedEvent] = useState<typeof initialEvents[0] | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Handler to add new event from dialog
   const handleAddEvent = (event: {
@@ -86,6 +88,11 @@ export default function EventsPage() {
     ]);
   };
 
+  const handleEventClick = (event: typeof initialEvents[0]) => {
+    setSelectedEvent(event);
+    setDetailsOpen(true);
+  };
+
   return (
     <section className="max-w-5xl mx-auto py-10 px-4">
       <div className="flex items-center justify-between mb-4 gap-3">
@@ -99,9 +106,11 @@ export default function EventsPage() {
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.map(event => (
-          <div
+          <button
             key={event.id}
-            className="bg-white shadow rounded-xl p-6 border border-border flex flex-col hover:shadow-lg transition-shadow"
+            className="bg-white shadow rounded-xl p-6 border border-border flex flex-col hover:shadow-lg transition-shadow text-left focus:outline-none"
+            onClick={() => handleEventClick(event)}
+            tabIndex={0}
           >
             <h2 className="text-xl font-semibold mb-1">{event.title}</h2>
             <div className="text-gray-500 mb-1">
@@ -126,9 +135,15 @@ export default function EventsPage() {
                 </span>
               ))}
             </div>
-          </div>
+          </button>
         ))}
       </div>
+      <EventDetailsDialog
+        open={detailsOpen}
+        onOpenChange={open => setDetailsOpen(open)}
+        event={selectedEvent}
+        friends={friends}
+      />
     </section>
   );
 }
