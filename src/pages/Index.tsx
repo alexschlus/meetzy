@@ -1,10 +1,11 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
 
   return (
     <div className="min-h-screen bg-background flex flex-col font-playfair relative">
@@ -22,10 +23,20 @@ const Index = () => {
           <Button
             variant="default"
             className="px-8 py-3 rounded-full font-bold text-blue-50 text-lg glass border-2 border-blue-400 shadow-glass hover:bg-blue-400/30 hover:text-white transition"
-            onClick={() => navigate("/events", { replace: true })}
+            onClick={() => navigate(user ? "/events" : "/auth", { replace: true })}
+            disabled={loading}
           >
-            Proceed to meetzy
+            {user ? "Go to meetzy" : "Sign in / Sign up"}
           </Button>
+          {!user && !loading && (
+            <Button
+              variant="outline"
+              className="px-8 py-3 rounded-full font-bold text-blue-50 text-lg glass border-2 border-blue-400 shadow-glass"
+              onClick={() => navigate("/auth")}
+            >
+              Login / Register
+            </Button>
+          )}
         </div>
       </div>
     </div>

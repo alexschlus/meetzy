@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,17 +13,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 const profileSchema = z.object({
   name: z.string().min(2, "Name is too short"),
   email: z.string().email("Invalid email"),
-  avatar: z.string().url("Must be a valid image URL"),
+  avatar: z.string().url("Must be a valid image URL").or(z.literal("")),
 });
 
 type ProfileForm = z.infer<typeof profileSchema>;
 
 type EditProfileDialogProps = {
   current: ProfileForm;
-  onSave: (data: ProfileForm) => void; // <- ensure all required
+  onSave: (data: ProfileForm) => void | Promise<void>;
+  loading?: boolean;
 };
 
-export default function EditProfileDialog({ current, onSave }: EditProfileDialogProps) {
+export default function EditProfileDialog({ current, onSave, loading = false }: EditProfileDialogProps) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<ProfileForm>({
@@ -35,12 +37,8 @@ export default function EditProfileDialog({ current, onSave }: EditProfileDialog
     form.reset(current);
   }, [open, current]);
 
-  function onSubmit(data: ProfileForm) {
+  function handleSubmit(data: ProfileForm) {
     onSave(data);
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been updated.",
-    });
     setOpen(false);
   }
 
@@ -55,7 +53,7 @@ export default function EditProfileDialog({ current, onSave }: EditProfileDialog
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-4"
             autoComplete="off"
           >
@@ -103,7 +101,7 @@ export default function EditProfileDialog({ current, onSave }: EditProfileDialog
                 type="submit"
                 variant="default"
                 className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
-                disabled={!form.formState.isValid || form.formState.isSubmitting}
+                disabled={!form.formState.isValid || form.formState.isSubmitting || loading}
               >
                 Save Changes
               </Button>

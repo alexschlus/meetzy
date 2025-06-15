@@ -4,22 +4,45 @@ import { User } from "lucide-react";
 import EditProfileDialog from "@/components/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
-const INITIAL_USER = {
-  name: "You (Jordan Doe)",
-  email: "jordan@email.com",
-  avatar: "https://randomuser.me/api/portraits/lego/1.jpg",
-};
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfilePage() {
-  const [user, setUser] = useState(INITIAL_USER);
+  const { user, updateProfile, signOut, loading } = useAuth();
+  const [editLoading, setEditLoading] = useState(false);
+  const navigate = useNavigate();
+
+  if (!user && !loading) {
+    navigate("/auth", { replace: true });
+    return null;
+  }
+  if (!user) {
+    // Still loading profile
+    return (
+      <section className="w-full max-w-md mx-auto py-10 px-4 flex items-center justify-center">
+        <span className="text-blue-100/70 animate-pulse">Loading profile...</span>
+      </section>
+    );
+  }
+
+  const handleSave = async (data: { name: string; email: string; avatar: string }) => {
+    setEditLoading(true);
+    const { error } = await updateProfile(data);
+    if (!error) {
+      toast({ title: "Profile updated", description: "Your profile information has been updated." });
+    } else {
+      toast({ title: "Update failed", description: error.message || "Could not update profile", variant: "destructive" });
+    }
+    setEditLoading(false);
+  };
 
   return (
     <section className="w-full max-w-md mx-auto py-10 px-4">
       <div className="flex items-center gap-5 mb-8">
         <Avatar className="w-20 h-20 border-2 border-blue-400 shadow-glass bg-blue-300/10">
           <AvatarImage
-            src={user.avatar}
+            src={user.avatar || ""}
             alt={user.name}
             className="object-cover"
           />
@@ -32,8 +55,9 @@ export default function ProfilePage() {
             </span>
             {user.name}
             <EditProfileDialog
-              current={user}
-              onSave={setUser}
+              current={{ name: user.name, email: user.email, avatar: user.avatar || "" }}
+              onSave={handleSave}
+              loading={editLoading}
             />
           </h1>
           <div className="text-blue-100/80 text-sm">{user.email}</div>
@@ -44,8 +68,13 @@ export default function ProfilePage() {
         <ul className="text-blue-100/80 text-sm space-y-2">
           <li><b>Name:</b> {user.name}</li>
           <li><b>Email:</b> {user.email}</li>
-          <li><b>Member since:</b> July 2024</li>
+          <li><b>Member since:</b> {new Date(user.created_at).toLocaleString()}</li>
         </ul>
+      </div>
+      <div className="mt-8 text-center">
+        <Button variant="outline" className="rounded-full px-6" onClick={signOut}>
+          Sign out
+        </Button>
       </div>
     </section>
   );
