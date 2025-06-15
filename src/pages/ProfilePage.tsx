@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { User } from "lucide-react";
 import EditProfileDialog from "@/components/EditProfileDialog";
@@ -43,3 +42,4 @@ export default function ProfilePage() {
     </section>
   );
 }
+

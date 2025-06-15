@@ -20,7 +20,7 @@ type ProfileForm = z.infer<typeof profileSchema>;
 
 type EditProfileDialogProps = {
   current: ProfileForm;
-  onSave: (data: ProfileForm) => void;
+  onSave: (data: ProfileForm) => void; // <- ensure all required
 };
 
 export default function EditProfileDialog({ current, onSave }: EditProfileDialogProps) {
