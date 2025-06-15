@@ -30,10 +30,10 @@ export default function BottomTabsLayout() {
   
   return (
     <div className="relative min-h-screen bg-background flex flex-col font-playfair dark">
-      <main className="flex-1 w-full bg-background pb-24 md:pb-20 glass transition-all duration-300">
+      <main className="flex-1 w-full bg-background pb-16 md:pb-14 glass transition-all duration-300">
         <Outlet />
       </main>
-      <nav className="fixed z-30 left-0 right-0 bottom-0 border-t border-border flex items-stretch justify-center h-20">
+      <nav className="fixed z-30 left-0 right-0 bottom-0 border-t border-border flex items-stretch justify-center h-16">
         <div className="grid grid-cols-3 w-full max-w-2xl mx-auto h-full">
           {TABS.map((tab) => {
             const isActive = location.pathname.startsWith(tab.path);
@@ -45,7 +45,7 @@ export default function BottomTabsLayout() {
                 className={`
                   flex flex-col items-center justify-center gap-1 h-full transition-colors 
                   ${isActive ? "text-blue-300 font-bold bg-glass/80 shadow-inner glass" : "text-gray-300 hover:bg-glass/40"}
-                  rounded-full mx-2 my-3 overflow-hidden
+                  rounded-full mx-2 my-2 overflow-hidden
                   `}
                 aria-current={isActive ? "page" : undefined}
                 style={{
@@ -54,7 +54,7 @@ export default function BottomTabsLayout() {
               >
                 <span className="icon-round" style={{background: isActive ? "rgba(95,135,255,0.14)" : "rgba(40,40,54,0.16)"}}>
                   <Icon
-                    size={28}
+                    size={24}
                     className={`mb-1 ${isActive ? "stroke-blue-200" : "stroke-blue-400"} transition-colors`}
                   />
                 </span>
