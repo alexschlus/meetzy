@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -171,7 +170,12 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" variant="default" disabled={!title || !date || !location || !time}>
+            <Button
+              type="submit"
+              variant="default"
+              className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
+              disabled={!title || !date || !location || !time}
+            >
               Add Event
             </Button>
           </DialogFooter>

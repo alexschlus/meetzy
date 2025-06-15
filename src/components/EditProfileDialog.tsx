@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -102,6 +101,8 @@ export default function EditProfileDialog({ current, onSave }: EditProfileDialog
             <DialogFooter>
               <Button
                 type="submit"
+                variant="default"
+                className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
                 disabled={!form.formState.isValid || form.formState.isSubmitting}
               >
                 Save Changes
