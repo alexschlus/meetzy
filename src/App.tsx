@@ -9,7 +9,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import EventsPage from "./pages/EventsPage";
 import FriendsPage from "./pages/FriendsPage";
-import MapPage from "./pages/MapPage";
 import ProfilePage from "./pages/ProfilePage";
 
 const queryClient = new QueryClient();
@@ -25,7 +24,6 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/friends" element={<FriendsPage />} />
-            <Route path="/map" element={<MapPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
@@ -36,3 +34,4 @@ const App = () => (
 );
 
 export default App;
+

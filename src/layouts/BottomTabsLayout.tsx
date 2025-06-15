@@ -1,6 +1,6 @@
 
 import { Outlet, useLocation, Link } from "react-router-dom";
-import { Calendar, Map, User } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 
 const TABS = [
   {
@@ -12,11 +12,6 @@ const TABS = [
     label: "Friends",
     path: "/friends",
     icon: User,
-  },
-  {
-    label: "Map",
-    path: "/map",
-    icon: Map,
   },
   {
     label: "Profile",
@@ -33,7 +28,7 @@ export default function BottomTabsLayout() {
         <Outlet />
       </main>
       <nav className="fixed z-30 left-0 right-0 bottom-0 bg-white border-t border-border shadow-sm flex items-stretch justify-center h-20">
-        <div className="grid grid-cols-4 w-full max-w-2xl mx-auto h-full">
+        <div className="grid grid-cols-3 w-full max-w-2xl mx-auto h-full">
           {TABS.map((tab, i) => {
             const isActive = location.pathname.startsWith(tab.path);
             const Icon = tab.icon;
@@ -59,3 +54,4 @@ export default function BottomTabsLayout() {
     </div>
   );
 }
+
