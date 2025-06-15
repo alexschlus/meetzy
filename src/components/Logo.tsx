@@ -2,11 +2,11 @@
 import React from "react";
 
 export default function Logo() {
-  // Placeholder logo - replace src with your uploaded logo when provided
+  // Using the provided logo image
   return (
     <div className="flex items-center gap-2">
       <img
-        src="/placeholder.svg"
+        src="/lovable-uploads/33fa5e16-2928-47ff-ba88-8fb2b97c5a58.png"
         alt="Meetzy logo"
         className="w-10 h-10 rounded-full bg-blue-300/20 object-contain shadow"
       />
