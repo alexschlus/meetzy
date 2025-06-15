@@ -117,11 +117,29 @@ export default function EventsPage() {
     }));
   };
 
+  // Helper: Render title with colored icon/emote
+  function renderEventTitle(title: string) {
+    // Try to split at first whitespace to separate emoji/icon (if present)
+    const match = title.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s?(.+)$/u);
+    if (match) {
+      return (
+        <span className="flex items-center gap-2">
+          <span className="rounded-full bg-blue-400/20 text-blue-200 px-2 py-1 text-xl shadow-glass">
+            {match[1]}
+          </span>
+          <span className="text-blue-50">{match[2]}</span>
+        </span>
+      );
+    }
+    // No lead emoji, just render text
+    return <span className="text-blue-50">{title}</span>;
+  }
+
   return (
     <section className="max-w-5xl mx-auto py-10 px-4">
       <div className="flex items-center justify-between mb-4 gap-3">
-        <h1 className="text-3xl font-bold flex items-center gap-3">
-          <Calendar className="w-8 h-8 stroke-blue-600" /> Upcoming Events
+        <h1 className="text-3xl font-bold flex items-center gap-3 text-blue-200">
+          <Calendar className="w-8 h-8 stroke-blue-300 bg-blue-400/20 rounded-full p-1 shadow-glass" /> Upcoming Events
         </h1>
         <AddEventDialog
           friends={friends}
@@ -132,12 +150,14 @@ export default function EventsPage() {
         {events.map(event => (
           <button
             key={event.id}
-            className="bg-white shadow rounded-xl p-6 border border-border flex flex-col hover:shadow-lg transition-shadow text-left focus:outline-none"
+            className="bg-glass border border-border shadow-glass rounded-3xl p-6 flex flex-col hover:shadow-lg transition-shadow text-left focus:outline-none"
             onClick={() => handleEventClick(event)}
             tabIndex={0}
           >
-            <h2 className="text-xl font-semibold mb-1">{event.title}</h2>
-            <div className="text-gray-500 mb-1">
+            <h2 className="text-xl font-semibold mb-1">
+              {renderEventTitle(event.title)}
+            </h2>
+            <div className="text-blue-100/80 mb-1">
               <span>{event.date}</span>
               {event.time && (
                 <span> • {event.time}</span>
@@ -147,13 +167,13 @@ export default function EventsPage() {
               )}
             </div>
             {event.description && (
-              <div className="mb-2 text-sm text-muted-foreground">{event.description}</div>
+              <div className="mb-2 text-sm text-blue-100/70">{event.description}</div>
             )}
             <div className="flex flex-wrap gap-2 items-center text-sm mt-2">
               {event.attendees.map(name => (
                 <span
                   key={name}
-                  className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full"
+                  className="bg-blue-300/30 text-blue-100 px-2 py-0.5 rounded-full"
                 >
                   {name}
                 </span>
