@@ -5,7 +5,7 @@ import EditProfileDialog from "@/components/EditProfileDialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 export default function ProfilePage() {
@@ -32,7 +32,11 @@ export default function ProfilePage() {
     if (!error) {
       toast({ title: "Profile updated", description: "Your profile information has been updated." });
     } else {
-      toast({ title: "Update failed", description: error.message || "Could not update profile", variant: "destructive" });
+      const description =
+        typeof error === "string"
+          ? error
+          : error?.message || "Could not update profile";
+      toast({ title: "Update failed", description, variant: "destructive" });
     }
     setEditLoading(false);
   };
