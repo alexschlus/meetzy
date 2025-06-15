@@ -2,6 +2,7 @@
 import React from "react";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import { Calendar, User } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const TABS = [
   {
@@ -30,6 +31,10 @@ export default function BottomTabsLayout() {
   
   return (
     <div className="relative min-h-screen bg-background flex flex-col font-playfair dark">
+      {/* Logo top left */}
+      <header className="absolute left-0 top-0 p-4 z-40">
+        <Logo />
+      </header>
       <main className="flex-1 w-full bg-background pb-24 md:pb-20 glass transition-all duration-300">
         <Outlet />
       </main>
