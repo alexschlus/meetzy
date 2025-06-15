@@ -1,8 +1,10 @@
+
+/* Google Fonts import (Playfair Display) */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
   :root {
@@ -98,6 +100,18 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-playfair;
   }
+  /* Glassmorphism utility included dynamically in tailwind.config.js */
+}
+
+/* Ensure all svgs/icons are circular if used with .icon-round */
+.icon-round {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.35rem;
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 1px 6px 0 rgba(40,40,60,0.08);
 }

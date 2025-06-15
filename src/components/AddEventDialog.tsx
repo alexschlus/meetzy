@@ -60,12 +60,16 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default" className="ml-auto mb-3">
+        <Button 
+          variant="default" 
+          size="lg"
+          className="ml-auto mb-3 glass shadow-glass rounded-full font-bold text-lg tracking-wider backdrop-blur-lg"
+        >
           + Add Event
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 font-playfair">
           <DialogHeader>
             <DialogTitle>Add New Event</DialogTitle>
           </DialogHeader>
@@ -86,13 +90,13 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full justify-start text-left font-normal"
+                    className="w-full justify-start text-left font-normal glass"
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <CalendarIcon className="mr-2 h-4 w-4 icon-round" />
                     {date ? format(date, "PPP") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 glass" align="start">
                   <Calendar
                     mode="single"
                     selected={date}
@@ -116,7 +120,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
           <div>
             <label className="text-sm font-medium mb-1 block">Location</label>
             <div className="relative">
-              <MapPin className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+              <MapPin className="absolute left-2 top-2.5 h-4 w-4 text-gray-400 icon-round bg-glass" />
               <Input
                 className="pl-8"
                 placeholder="Location"
@@ -137,24 +141,24 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
           </div>
           <div>
             <label className="text-sm font-medium mb-1 block flex items-center gap-1">
-              <Users className="h-4 w-4" /> Invite Friends
+              <Users className="h-4 w-4 icon-round" /> Invite Friends
             </label>
             <div className="flex flex-wrap gap-2 mt-1">
               {friends.map(friend => (
                 <button
                   type="button"
                   key={friend.id}
-                  className={`flex items-center border rounded-full px-2 py-1 text-sm
+                  className={`flex items-center border px-2 py-1 text-sm rounded-full transition-colors glass shadow glass
                     ${invitees.includes(friend.name)
-                      ? "bg-blue-100 border-blue-400 text-blue-900"
-                      : "bg-gray-100 border-gray-200 text-gray-700"}
+                      ? "bg-blue-400/80 border-blue-400 text-blue-50 shadow-glass"
+                      : "bg-gray-600/40 border-gray-600 text-gray-100"}
                     `}
                   onClick={() => handleToggleInvite(friend.name)}
                 >
                   <img
                     src={friend.avatar}
                     alt={friend.name}
-                    className="w-5 h-5 rounded-full mr-1"
+                    className="w-5 h-5 rounded-full mr-1 border border-white"
                   />
                   {friend.name}
                 </button>
