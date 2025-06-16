@@ -40,7 +40,7 @@ export default function FriendsPage() {
       const { data, error } = await supabase
         .from("friends")
         .select(
-          "*,requester:requester_id(name,avatar,email,id),addressee:addressee_id(name,avatar,email,id)"
+          "*,requester:profiles!requester_id(name,avatar,email,id),addressee:profiles!addressee_id(name,avatar,email,id)"
         )
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
         .order("created_at", { ascending: false });
@@ -90,19 +90,19 @@ export default function FriendsPage() {
 
   // List requested/accepted/pending friends
   const accepted = friendRows.filter(
-    (f: FriendRow) =>
+    (f: any) =>
       f.status === "accepted" &&
       (f.requester_id === user?.id || f.addressee_id === user?.id)
   );
 
   const incoming = friendRows.filter(
-    (f: FriendRow) =>
+    (f: any) =>
       f.status === "pending" &&
       f.addressee_id === user?.id
   );
 
   const outgoing = friendRows.filter(
-    (f: FriendRow) =>
+    (f: any) =>
       f.status === "pending" &&
       f.requester_id === user?.id
   );
@@ -125,7 +125,7 @@ export default function FriendsPage() {
           <div className="text-blue-100/60 mb-8">No friends yet!</div>
         ) : (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-            {accepted.map((f: FriendRow) => {
+            {accepted.map((f: any) => {
               const profile = f.requester_id === user?.id ? f.addressee : f.requester;
               if (!profile) return null;
               return (
@@ -156,7 +156,7 @@ export default function FriendsPage() {
           <div className="text-blue-100/60 mb-8">No pending requests.</div>
         ) : (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
-            {incoming.map((f: FriendRow) => {
+            {incoming.map((f: any) => {
               const profile = f.requester;
               if (!profile) return null;
               return (
@@ -204,7 +204,7 @@ export default function FriendsPage() {
           <div className="text-blue-100/60">You have not sent any requests.</div>
         ) : (
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {outgoing.map((f: FriendRow) => {
+            {outgoing.map((f: any) => {
               const profile = f.addressee;
               if (!profile) return null;
               return (

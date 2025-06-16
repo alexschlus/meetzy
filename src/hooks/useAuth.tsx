@@ -80,7 +80,7 @@ export function useAuth() {
 
   // Signup
   const signUp = useCallback(async (name: string, email: string, password: string) => {
-    // Redirect after email registration
+    // Redirect after email registration - ensure it goes to homepage
     const redirectTo = `${window.location.origin}/`;
     const { error } = await supabase.auth.signUp({
       email,

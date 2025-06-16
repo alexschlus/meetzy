@@ -81,11 +81,13 @@ export default function EventsPage() {
         .select("*")
         .order("date", { ascending: false });
       if (error) throw error;
-      // attendees is json, ensure string[] or []
+      // Convert Json[] to string[] for attendees
       return (
         data?.map((e) => ({
           ...e,
-          attendees: Array.isArray(e.attendees) ? e.attendees : [],
+          attendees: Array.isArray(e.attendees) 
+            ? e.attendees.filter((attendee): attendee is string => typeof attendee === 'string')
+            : [],
         })) ?? []
       );
     },
@@ -209,9 +211,9 @@ export default function EventsPage() {
                 <div className="mb-2 text-sm text-blue-100/70">{event.description}</div>
               )}
               <div className="flex flex-wrap gap-2 items-center text-sm mt-2">
-                {Array.isArray(event.attendees) && event.attendees.map(name => (
+                {event.attendees.map((name, index) => (
                   <span
-                    key={name}
+                    key={`${name}-${index}`}
                     className="bg-blue-300/30 text-blue-100 px-2 py-0.5 rounded-full"
                   >
                     {name}

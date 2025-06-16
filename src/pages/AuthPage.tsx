@@ -18,7 +18,7 @@ export default function AuthPage() {
 
   // Redirect to home if already logged in
   if (user && !loading) {
-    navigate("/events", { replace: true });
+    navigate("/", { replace: true });
     return null;
   }
 
@@ -28,7 +28,7 @@ export default function AuthPage() {
     if (view === "login") {
       const error = await signIn(email, password);
       if (error) toast({ title: "Login failed", description: error.message || "Invalid credentials", variant: "destructive" });
-      else window.location.href = "/events";
+      else window.location.href = "/";
     } else {
       if (!name.trim()) {
         toast({ title: "Name required", description: "Please enter your name.", variant: "destructive"});
