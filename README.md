@@ -33,7 +33,7 @@ Currently, this is a **UI-first prototype**, built using [lovable.dev](https://l
 
 - **Frontend:** React + TailwindCSS (exported from lovable.dev)
 - **Hosting:** Vercel
-- **Backend:** Not yet implemented (planned: Supabase or Firebase)
+- **Backend:** Supabase
 
 ---
 
