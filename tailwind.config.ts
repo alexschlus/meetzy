@@ -168,7 +168,7 @@ export default {
           'border': '1px solid rgba(255,255,255,0.10)'
         },
         '.glass-light': {
-          'background': 'rgba(255,255,255,0.10)',
+          'background': 'rgba(12,18,36,0.0)',
           'backdrop-filter': 'blur(16px) saturate(150%)',
           '-webkit-backdrop-filter': 'blur(16px) saturate(150%)',
           'border': '1px solid rgba(255,255,255,0.14)'
