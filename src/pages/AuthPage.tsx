@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -45,7 +46,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-background">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-background font-playfair relative">
       <Logo />
       <div className="bg-glass mt-6 p-8 rounded-2xl w-full max-w-md shadow-glass">
         <h1 className="text-2xl font-bold mb-4 text-blue-200 text-center">
