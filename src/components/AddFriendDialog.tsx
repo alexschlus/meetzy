@@ -29,17 +29,29 @@ export default function AddFriendDialog({ onAdd }: { onAdd?: () => void }) {
     setLoading(true);
     
     try {
-      // First try to find user in profiles table
-      const { data: profile } = await supabase
+      console.log("Searching for user with email:", data.email);
+
+      // First check if user exists in auth.users via profiles table
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id,email")
+        .select("id,email,name")
         .eq("email", data.email)
         .maybeSingle();
 
+      console.log("Profile search result:", profile, "Error:", profileError);
+
       if (!profile) {
+        // Also check if there are any profiles at all to debug
+        const { data: allProfiles, error: allError } = await supabase
+          .from("profiles")
+          .select("id,email,name")
+          .limit(5);
+        
+        console.log("All profiles (first 5):", allProfiles, "Error:", allError);
+        
         toast({ 
           title: "User not found", 
-          description: "No user with that email address has signed up yet.",
+          description: "No user with that email address has signed up yet. Make sure they have created an account first.",
           variant: "destructive"
         });
         setLoading(false);
