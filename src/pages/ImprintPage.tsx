@@ -26,14 +26,13 @@ const ImprintPage = () => {
               <div className="space-y-3">
                 <p><strong>Service Provider:</strong> meetzy</p>
                 <p><strong>Address:</strong><br />
-                  [Your Company Name]<br />
-                  [Street Address]<br />
-                  [City, Postal Code]<br />
-                  [Country]
+                  meetzy<br />
+                  Cologne, 51109<br />
+                  Germany
                 </p>
                 <p><strong>Contact:</strong><br />
-                  Email: contact@meetzy.app<br />
-                  Phone: [Phone Number]
+                  Email: mail@alexschlus.de<br />
+                  Phone: +49 1633839274
                 </p>
                 <p><strong>Responsible for content:</strong> [Name of responsible person]</p>
               </div>
