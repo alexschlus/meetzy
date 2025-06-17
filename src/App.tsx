@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,7 @@ import EventsPage from "./pages/EventsPage";
 import FriendsPage from "./pages/FriendsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AuthPage from "@/pages/AuthPage";
+import ImprintPage from "@/pages/ImprintPage";
 import { useAuth } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
@@ -37,6 +39,7 @@ const App = () => (
           {/* The landing page "/" does NOT use the BottomTabsLayout */}
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/imprint" element={<ImprintPage />} />
           {/* All other pages use the layout with the tab bar */}
           <Route element={<BottomTabsLayout />}>
             <Route path="/events" element={<PrivateRoute element={<EventsPage />} />} />
