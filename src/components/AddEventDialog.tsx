@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,9 @@ import { CalendarIcon, Users, MapPin, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 type Friend = {
   id: number;
@@ -16,17 +20,11 @@ type Friend = {
 
 type AddEventDialogProps = {
   friends: Friend[];
-  onAdd: (event: {
-    title: string;
-    date: Date | null;
-    time: string;
-    location: string;
-    description: string;
-    attendees: string[];
-  }) => void;
+  onAdd: () => void;
 };
 
 export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date | null>(null);
@@ -34,6 +32,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
   const [invitees, setInvitees] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleToggleInvite = (name: string) => {
     setInvitees(invitees =>
@@ -43,17 +42,53 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !date || !location || !time) return;
-    onAdd({ title, date, time, location, description, attendees: invitees });
-    setTitle("");
-    setDate(null);
-    setTime("");
-    setLocation("");
-    setDescription("");
-    setInvitees([]);
-    setOpen(false);
+    if (!title || !date || !location || !time || !user) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Add current user to attendees list
+      const userEmail = user.email || user.id;
+      const allAttendees = [userEmail, ...invitees];
+
+      const { error } = await supabase
+        .from("events")
+        .insert({
+          title,
+          date: format(date, "yyyy-MM-dd"),
+          time,
+          location,
+          description,
+          attendees: allAttendees,
+          user_id: user.id,
+        });
+
+      if (error) throw error;
+
+      toast.success("Event created successfully!");
+      
+      // Reset form
+      setTitle("");
+      setDate(null);
+      setTime("");
+      setLocation("");
+      setDescription("");
+      setInvitees([]);
+      setOpen(false);
+      
+      // Trigger refresh
+      onAdd();
+    } catch (error) {
+      console.error("Error creating event:", error);
+      toast.error("Failed to create event");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -166,7 +201,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" disabled={isLoading}>
                 Cancel
               </Button>
             </DialogClose>
@@ -174,9 +209,9 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               type="submit"
               variant="default"
               className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
-              disabled={!title || !date || !location || !time}
+              disabled={!title || !date || !location || !time || isLoading}
             >
-              Add Event
+              {isLoading ? "Creating..." : "Add Event"}
             </Button>
           </DialogFooter>
         </form>
