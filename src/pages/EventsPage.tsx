@@ -1,3 +1,4 @@
+
 import { Calendar, MapPin, Clock, Plus, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,8 +26,9 @@ type SupabaseEvent = {
 export default function EventsPage() {
   const { user } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<SupabaseEvent | null>(null);
+  const [messages, setMessages] = useState<{[eventId: string]: Array<{sender: string, text: string, timestamp: string}>}>({});
 
-  const { data: events = [], isLoading } = useQuery({
+  const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ["events"],
     queryFn: async () => {
       if (!user) return [];
@@ -41,6 +43,19 @@ export default function EventsPage() {
     enabled: !!user,
   });
 
+  // Mock friends data for the dialogs
+  const mockFriends = [
+    { id: 1, name: "Alice", avatar: "", status: "online" },
+    { id: 2, name: "Bob", avatar: "", status: "offline" },
+  ];
+
+  const handleSendMessage = (eventId: string, message: {sender: string, text: string, timestamp: string}) => {
+    setMessages(prev => ({
+      ...prev,
+      [eventId]: [...(prev[eventId] || []), message]
+    }));
+  };
+
   return (
     <section className="max-w-4xl mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-4 flex items-center gap-3 text-blue-200">
@@ -50,7 +65,7 @@ export default function EventsPage() {
         Events
       </h1>
       <div className="flex items-center mb-8 gap-2">
-        <AddEventDialog />
+        <AddEventDialog friends={mockFriends} onAdd={() => refetch()} />
       </div>
       {isLoading ? (
         <div>Loading...</div>
@@ -88,9 +103,20 @@ export default function EventsPage() {
         </div>
       )}
       <EventDetailsDialog
-        event={selectedEvent}
+        event={selectedEvent ? {
+          id: parseInt(selectedEvent.id) || 1,
+          title: selectedEvent.title,
+          date: selectedEvent.date,
+          time: selectedEvent.time,
+          location: selectedEvent.location || "",
+          description: selectedEvent.description || "",
+          attendees: Array.isArray(selectedEvent.attendees) ? selectedEvent.attendees : []
+        } : null}
         open={!!selectedEvent}
         onOpenChange={() => setSelectedEvent(null)}
+        friends={mockFriends}
+        messages={selectedEvent ? (messages[selectedEvent.id] || []) : []}
+        onSendMessage={(message) => selectedEvent && handleSendMessage(selectedEvent.id, message)}
       />
     </section>
   );

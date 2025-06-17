@@ -40,7 +40,6 @@ type EventDetailsDialogProps = {
   onOpenChange: (open: boolean) => void;
   event: Event | null;
   friends: Friend[];
-  // new: messages for current event, and send callback
   messages: Message[];
   onSendMessage: (msg: Message) => void;
 };
@@ -70,8 +69,11 @@ export default function EventDetailsDialog({
 
   if (!event) return null;
 
+  // Ensure attendees is always an array
+  const safeAttendees = Array.isArray(event.attendees) ? event.attendees : [];
+
   // Find avatars for attendees
-  const attendeeAvatars = event.attendees.map((name) =>
+  const attendeeAvatars = safeAttendees.map((name) =>
     friends.find((f) => f.name === name)
   );
 
@@ -130,14 +132,14 @@ export default function EventDetailsDialog({
                 ) : (
                   <span
                     className="w-7 h-7 flex items-center justify-center bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
-                    key={event.attendees[i]}
+                    key={safeAttendees[i]}
                   >
-                    {event.attendees[i][0]}
+                    {safeAttendees[i] ? safeAttendees[i][0] : "?"}
                   </span>
                 ))}
               </div>
               <div className="mt-2 text-xs text-gray-500 flex flex-wrap gap-2">
-                {event.attendees.map((name) => (
+                {safeAttendees.map((name) => (
                   <span key={name}>{name}</span>
                 ))}
               </div>
