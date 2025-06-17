@@ -27,51 +27,92 @@ export default function AddFriendDialog({ onAdd }: { onAdd?: () => void }) {
 
   const handleInvite = async (data: FormType) => {
     setLoading(true);
-    // Lookup user by email
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id,email")
-      .eq("email", data.email)
-      .maybeSingle();
-    if (!profile) {
-      toast({ title: "User not found", description: "No user with that email." });
-      setLoading(false);
-      return;
-    }
-    const requesterId = (await supabase.auth.getUser()).data?.user?.id;
-    if (!requesterId) {
-      toast({ title: "Not authenticated" });
-      setLoading(false);
-      return;
-    }
-    if (profile.id === requesterId) {
-      toast({ title: "Cannot add yourself as a friend" });
-      setLoading(false);
-      return;
-    }
-    // Create friend request
-    const { error } = await supabase.from("friends").insert({
-      requester_id: requesterId,
-      addressee_id: profile.id,
-      status: "pending",
-    });
-    if (error && error.code === "23505") {
-      toast({
-        title: "Already requested",
-        description: "A friend request already exists.",
+    
+    try {
+      // First try to find user in profiles table
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id,email")
+        .eq("email", data.email)
+        .maybeSingle();
+
+      if (!profile) {
+        toast({ 
+          title: "User not found", 
+          description: "No user with that email address has signed up yet.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      const requesterId = (await supabase.auth.getUser()).data?.user?.id;
+      if (!requesterId) {
+        toast({ title: "Not authenticated", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      if (profile.id === requesterId) {
+        toast({ title: "Cannot add yourself as a friend", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      // Check if friendship already exists (in either direction)
+      const { data: existingFriendship } = await supabase
+        .from("friends")
+        .select("id, status")
+        .or(`and(requester_id.eq.${requesterId},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${requesterId})`)
+        .maybeSingle();
+
+      if (existingFriendship) {
+        if (existingFriendship.status === "accepted") {
+          toast({
+            title: "Already friends",
+            description: "You are already friends with this user.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Friend request already exists",
+            description: "A friend request already exists between you and this user.",
+            variant: "destructive"
+          });
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Create friend request
+      const { error } = await supabase.from("friends").insert({
+        requester_id: requesterId,
+        addressee_id: profile.id,
+        status: "pending",
       });
-    } else if (error) {
+
+      if (error) {
+        console.error("Friend request error:", error);
+        toast({
+          title: "Error sending request",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "Friend request sent successfully!" });
+        onAdd?.();
+        setOpen(false);
+        form.reset();
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
       toast({
-        title: "Error sending request",
-        description: error.message,
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
-    } else {
-      toast({ title: "Friend request sent" });
-      onAdd?.();
-      setOpen(false);
-      form.reset();
     }
+    
     setLoading(false);
   };
 
@@ -97,7 +138,7 @@ export default function AddFriendDialog({ onAdd }: { onAdd?: () => void }) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Friend's email" />
+                    <Input {...field} placeholder="Friend's email address" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -110,7 +151,7 @@ export default function AddFriendDialog({ onAdd }: { onAdd?: () => void }) {
                 className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
                 disabled={!form.formState.isValid || loading}
               >
-                Invite
+                {loading ? "Sending..." : "Send Friend Request"}
               </Button>
               <DialogClose asChild>
                 <Button type="button" variant="ghost">
