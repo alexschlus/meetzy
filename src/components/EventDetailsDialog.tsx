@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Music, ExternalLink } from "lucide-react";
 
 type Event = {
   id: number;
@@ -20,6 +20,7 @@ type Event = {
   location: string;
   description: string;
   attendees: string[];
+  spotify_playlist_url?: string;
 };
 
 type Friend = {
@@ -116,6 +117,23 @@ export default function EventDetailsDialog({
               <div className="mb-4">
                 <span className="text-sm font-semibold text-muted-foreground">Description:</span>
                 <p className="ml-2 text-muted-foreground text-sm">{event.description}</p>
+              </div>
+            )}
+            {event.spotify_playlist_url && (
+              <div className="mb-4">
+                <span className="text-sm font-semibold text-muted-foreground flex items-center gap-1">
+                  <Music className="w-4 h-4 text-green-400" />
+                  Spotify Playlist:
+                </span>
+                <a
+                  href={event.spotify_playlist_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 flex items-center gap-1 text-green-400 hover:text-green-300 transition-colors underline text-sm"
+                >
+                  Open Playlist
+                  <ExternalLink className="w-3 h-3" />
+                </a>
               </div>
             )}
             <div className="mb-2">

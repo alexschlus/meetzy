@@ -161,6 +161,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
                 type="time"
                 value={time}
                 onChange={e => setTime(e.target.value)}
+                placeholder=""
                 required
               />
             </div>

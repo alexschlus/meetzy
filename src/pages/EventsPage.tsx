@@ -270,7 +270,8 @@ export default function EventsPage() {
           time: selectedEvent.time,
           location: selectedEvent.location || "",
           description: selectedEvent.description || "",
-          attendees: Array.isArray(selectedEvent.attendees) ? selectedEvent.attendees : []
+          attendees: Array.isArray(selectedEvent.attendees) ? selectedEvent.attendees : [],
+          spotify_playlist_url: selectedEvent.spotify_playlist_url || undefined
         } : null}
         open={!!selectedEvent}
         onOpenChange={() => setSelectedEvent(null)}
