@@ -49,15 +49,16 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
     return spotifyPlaylistRegex.test(url);
   };
 
+  const isFormValid = () => {
+    const hasRequiredFields = title && date && location && time && user;
+    const hasValidSpotifyUrl = validateSpotifyUrl(spotifyPlaylistUrl);
+    return hasRequiredFields && hasValidSpotifyUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !date || !location || !time || !user) {
+    if (!isFormValid()) {
       toast.error("Please fill in all required fields");
-      return;
-    }
-
-    if (spotifyPlaylistUrl && !validateSpotifyUrl(spotifyPlaylistUrl)) {
-      toast.error("Please enter a valid Spotify playlist URL");
       return;
     }
 
@@ -72,7 +73,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
         .from("events")
         .insert({
           title,
-          date: format(date, "yyyy-MM-dd"),
+          date: format(date!, "yyyy-MM-dd"),
           time,
           location,
           description,
@@ -238,7 +239,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               type="submit"
               variant="default"
               className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
-              disabled={!title || !date || !location || !time || isLoading || (spotifyPlaylistUrl && !validateSpotifyUrl(spotifyPlaylistUrl))}
+              disabled={!isFormValid() || isLoading}
             >
               {isLoading ? "Creating..." : "Add Event"}
             </Button>
