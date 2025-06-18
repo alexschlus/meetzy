@@ -17,6 +17,8 @@ export type Database = {
           description: string | null
           id: string
           location: string | null
+          poll_responses: Json | null
+          spotify_playlist_url: string | null
           time: string
           title: string
           updated_at: string
@@ -29,6 +31,8 @@ export type Database = {
           description?: string | null
           id?: string
           location?: string | null
+          poll_responses?: Json | null
+          spotify_playlist_url?: string | null
           time: string
           title: string
           updated_at?: string
@@ -41,6 +45,8 @@ export type Database = {
           description?: string | null
           id?: string
           location?: string | null
+          poll_responses?: Json | null
+          spotify_playlist_url?: string | null
           time?: string
           title?: string
           updated_at?: string

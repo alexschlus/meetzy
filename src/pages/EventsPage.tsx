@@ -1,4 +1,5 @@
-import { Calendar, MapPin, Clock, Plus, User, Trash2 } from "lucide-react";
+
+import { Calendar, MapPin, Clock, Plus, User, Trash2, Music, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import AddEventDialog from "@/components/AddEventDialog";
 import EventDetailsDialog from "@/components/EventDetailsDialog";
+import EventAttendancePoll from "@/components/EventAttendancePoll";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +31,8 @@ type SupabaseEvent = {
   time: string;
   location: string | null;
   attendees: any;
+  spotify_playlist_url: string | null;
+  poll_responses: any;
   user_id: string;
   created_at: string;
   updated_at: string;
@@ -175,11 +179,38 @@ export default function EventsPage() {
           <MapPin className="w-4 h-4" />
           {event.location || "No location specified"}
         </div>
+        
+        {event.spotify_playlist_url && (
+          <div className="flex items-center gap-2 text-green-400 mb-4">
+            <Music className="w-4 h-4" />
+            <a
+              href={event.spotify_playlist_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 hover:text-green-300 transition-colors underline"
+            >
+              Spotify Playlist
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        )}
+
         {isExpired && (
           <div className="text-red-400 text-sm mb-2 font-medium">
             Event Expired
           </div>
         )}
+
+        {!isExpired && (
+          <div className="mb-4">
+            <EventAttendancePoll
+              eventId={event.id}
+              pollResponses={Array.isArray(event.poll_responses) ? event.poll_responses : []}
+              onUpdate={refetch}
+            />
+          </div>
+        )}
+
         <Button
           variant="outline"
           className="w-full"

@@ -4,7 +4,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, Users, MapPin, Clock } from "lucide-react";
+import { CalendarIcon, Users, MapPin, Clock, Music } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -31,6 +31,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
+  const [spotifyPlaylistUrl, setSpotifyPlaylistUrl] = useState("");
   const [invitees, setInvitees] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,10 +43,21 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
     );
   };
 
+  const validateSpotifyUrl = (url: string) => {
+    if (!url) return true; // Empty is valid (optional field)
+    const spotifyPlaylistRegex = /^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+(\?.*)?$/;
+    return spotifyPlaylistRegex.test(url);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !date || !location || !time || !user) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (spotifyPlaylistUrl && !validateSpotifyUrl(spotifyPlaylistUrl)) {
+      toast.error("Please enter a valid Spotify playlist URL");
       return;
     }
 
@@ -64,6 +76,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
           time,
           location,
           description,
+          spotify_playlist_url: spotifyPlaylistUrl || null,
           attendees: allAttendees,
           user_id: user.id,
         });
@@ -78,6 +91,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
       setTime("");
       setLocation("");
       setDescription("");
+      setSpotifyPlaylistUrl("");
       setInvitees([]);
       setOpen(false);
       
@@ -175,6 +189,20 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
           </div>
           <div>
             <label className="text-sm font-medium mb-1 block flex items-center gap-1">
+              <Music className="h-4 w-4 icon-round bg-green-400/20 text-green-400" /> Spotify Playlist (Optional)
+            </label>
+            <Input
+              placeholder="https://open.spotify.com/playlist/..."
+              value={spotifyPlaylistUrl}
+              onChange={e => setSpotifyPlaylistUrl(e.target.value)}
+              className={spotifyPlaylistUrl && !validateSpotifyUrl(spotifyPlaylistUrl) ? "border-red-500" : ""}
+            />
+            {spotifyPlaylistUrl && !validateSpotifyUrl(spotifyPlaylistUrl) && (
+              <p className="text-red-500 text-xs mt-1">Please enter a valid Spotify playlist URL</p>
+            )}
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-1 block flex items-center gap-1">
               <Users className="h-4 w-4 icon-round bg-blue-400/20 text-blue-400" /> Invite Friends
             </label>
             <div className="flex flex-wrap gap-2 mt-1">
@@ -209,7 +237,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               type="submit"
               variant="default"
               className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
-              disabled={!title || !date || !location || !time || isLoading}
+              disabled={!title || !date || !location || !time || isLoading || (spotifyPlaylistUrl && !validateSpotifyUrl(spotifyPlaylistUrl))}
             >
               {isLoading ? "Creating..." : "Add Event"}
             </Button>
