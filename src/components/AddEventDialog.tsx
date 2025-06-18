@@ -44,20 +44,19 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
   };
 
   const validateSpotifyUrl = (url: string) => {
-    if (!url) return true; // Empty is valid (optional field)
+    if (!url.trim()) return true; // Empty is valid (optional field)
     const spotifyPlaylistRegex = /^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+(\?.*)?$/;
     return spotifyPlaylistRegex.test(url);
   };
 
-  const isFormValid = () => {
-    const hasRequiredFields = title && date && location && time && user;
-    const hasValidSpotifyUrl = validateSpotifyUrl(spotifyPlaylistUrl);
-    return hasRequiredFields && hasValidSpotifyUrl;
-  };
+  // Check if all required fields are filled and Spotify URL is valid
+  const hasRequiredFields = Boolean(title.trim() && date && location.trim() && time.trim() && user);
+  const hasValidSpotifyUrl = validateSpotifyUrl(spotifyPlaylistUrl);
+  const isFormValid = hasRequiredFields && hasValidSpotifyUrl;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid()) {
+    if (!isFormValid) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -77,7 +76,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
           time,
           location,
           description,
-          spotify_playlist_url: spotifyPlaylistUrl || null,
+          spotify_playlist_url: spotifyPlaylistUrl.trim() || null,
           attendees: allAttendees,
           user_id: user.id,
         });
@@ -162,7 +161,6 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
                 type="time"
                 value={time}
                 onChange={e => setTime(e.target.value)}
-                placeholder=""
                 required
               />
             </div>
@@ -239,7 +237,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               type="submit"
               variant="default"
               className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
-              disabled={!isFormValid() || isLoading}
+              disabled={!isFormValid || isLoading}
             >
               {isLoading ? "Creating..." : "Add Event"}
             </Button>
