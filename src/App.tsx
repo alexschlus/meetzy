@@ -8,6 +8,7 @@ import BottomTabsLayout from "./layouts/BottomTabsLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import EventsPage from "./pages/EventsPage";
+import MapPage from "./pages/MapPage";
 import FriendsPage from "./pages/FriendsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AuthPage from "@/pages/AuthPage";
@@ -43,6 +44,7 @@ const App = () => (
           {/* All other pages use the layout with the tab bar */}
           <Route element={<BottomTabsLayout />}>
             <Route path="/events" element={<PrivateRoute element={<EventsPage />} />} />
+            <Route path="/map" element={<PrivateRoute element={<MapPage />} />} />
             <Route path="/friends" element={<PrivateRoute element={<FriendsPage />} />} />
             <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
           </Route>

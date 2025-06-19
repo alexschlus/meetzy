@@ -35,6 +35,8 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
   const [spotifyPlaylistUrl, setSpotifyPlaylistUrl] = useState("");
   const [invitees, setInvitees] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const [addressValid, setAddressValid] = useState<boolean | null>(null);
 
   const handleToggleInvite = (name: string) => {
     setInvitees(invitees =>
@@ -50,15 +52,58 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
     return spotifyPlaylistRegex.test(url);
   };
 
-  // Check if all required fields are filled and Spotify URL is valid
+  const validateAddress = async (address: string) => {
+    if (!address.trim()) {
+      setAddressValid(null);
+      return;
+    }
+
+    setIsValidatingAddress(true);
+    try {
+      // Use a geocoding service to validate the address
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
+      );
+      const data = await response.json();
+      
+      if (data && data.length > 0) {
+        setAddressValid(true);
+      } else {
+        setAddressValid(false);
+      }
+    } catch (error) {
+      console.error("Address validation error:", error);
+      setAddressValid(false);
+    } finally {
+      setIsValidatingAddress(false);
+    }
+  };
+
+  const handleLocationChange = (value: string) => {
+    setLocation(value);
+    // Debounce address validation
+    const timeoutId = setTimeout(() => {
+      validateAddress(value);
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
+  };
+
+  // Check if all required fields are filled and address is valid
   const hasRequiredFields = Boolean(title.trim() && date && location.trim() && time.trim() && user);
   const hasValidSpotifyUrl = validateSpotifyUrl(spotifyPlaylistUrl);
-  const isFormValid = hasRequiredFields && hasValidSpotifyUrl;
+  const isFormValid = hasRequiredFields && hasValidSpotifyUrl && addressValid === true;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!addressValid) {
+      toast.error("Please enter a valid address for the location");
+      return;
+    }
+    
     if (!isFormValid) {
-      toast.error("Please fill in all required fields");
+      toast.error("Please fill in all required fields with valid information");
       return;
     }
 
@@ -94,6 +139,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
       setDescription("");
       setSpotifyPlaylistUrl("");
       setInvitees([]);
+      setAddressValid(null);
       setOpen(false);
       
       // Trigger refresh
@@ -124,7 +170,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               <DialogTitle>Add New Event</DialogTitle>
             </DialogHeader>
             <div>
-              <label className="text-sm font-medium mb-1 block">Title</label>
+              <label className="text-sm font-medium mb-1 block">Title *</label>
               <Input
                 placeholder="Event Name"
                 value={title}
@@ -134,7 +180,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
             </div>
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="text-sm font-medium mb-1 block">Date</label>
+                <label className="text-sm font-medium mb-1 block">Date *</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -158,7 +204,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
                 </Popover>
               </div>
               <div className="flex-1">
-                <label className="text-sm font-medium mb-1 block">Time (24h format)</label>
+                <label className="text-sm font-medium mb-1 block">Time (24h format) *</label>
                 <Button
                   type="button"
                   variant="outline"
@@ -171,17 +217,35 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Location</label>
+              <label className="text-sm font-medium mb-1 block">Location (Full Address Required) *</label>
               <div className="relative">
-                <MapPin className="absolute left-2 top-2.5 h-4 w-4 text-blue-300 icon-round bg-blue-400/20" />
+                <MapPin className={`absolute left-2 top-2.5 h-4 w-4 icon-round ${
+                  addressValid === true ? 'text-green-400 bg-green-400/20' :
+                  addressValid === false ? 'text-red-400 bg-red-400/20' :
+                  'text-blue-300 bg-blue-400/20'
+                }`} />
                 <Input
-                  className="pl-8"
-                  placeholder="Location"
+                  className={`pl-8 ${
+                    addressValid === false ? 'border-red-500' :
+                    addressValid === true ? 'border-green-500' : ''
+                  }`}
+                  placeholder="Street Address, City, Country"
                   value={location}
-                  onChange={e => setLocation(e.target.value)}
+                  onChange={e => handleLocationChange(e.target.value)}
                   required
                 />
+                {isValidatingAddress && (
+                  <div className="absolute right-2 top-2.5">
+                    <div className="animate-spin h-4 w-4 border-2 border-blue-400 border-t-transparent rounded-full"></div>
+                  </div>
+                )}
               </div>
+              {addressValid === false && (
+                <p className="text-red-500 text-xs mt-1">Please enter a valid, complete address</p>
+              )}
+              {addressValid === true && (
+                <p className="text-green-500 text-xs mt-1">Address validated ✓</p>
+              )}
             </div>
             <div>
               <label className="text-sm font-medium mb-1 block">Description</label>
@@ -242,7 +306,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
                 type="submit"
                 variant="default"
                 className="glass border-2 border-blue-400 text-blue-50 font-bold tracking-wide rounded-full shadow-glass"
-                disabled={!isFormValid || isLoading}
+                disabled={!isFormValid || isLoading || isValidatingAddress}
               >
                 {isLoading ? "Creating..." : "Add Event"}
               </Button>
