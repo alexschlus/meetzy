@@ -58,16 +58,29 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
       return;
     }
 
+    // Check if address has at least a street number and name pattern
+    const streetPattern = /\d+\s+[A-Za-z\s]+/;
+    if (!streetPattern.test(address.trim())) {
+      setAddressValid(false);
+      return;
+    }
+
     setIsValidatingAddress(true);
     try {
       // Use a geocoding service to validate the address
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&addressdetails=1`
       );
       const data = await response.json();
       
       if (data && data.length > 0) {
-        setAddressValid(true);
+        const result = data[0];
+        // Check if the result has proper address components (house number and street)
+        if (result.address && (result.address.house_number || result.address.street_number) && result.address.road) {
+          setAddressValid(true);
+        } else {
+          setAddressValid(false);
+        }
       } else {
         setAddressValid(false);
       }

@@ -1,12 +1,14 @@
 
 import { useEffect, useState } from "react";
-import { MapPin, ExternalLink, Calendar, Clock } from "lucide-react";
+import { MapPin, ExternalLink, Calendar, Clock, Key } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import InteractiveMap from "@/components/InteractiveMap";
 
 type EventLocation = {
   id: string;
@@ -21,7 +23,8 @@ type EventLocation = {
 export default function MapPage() {
   const { user } = useAuth();
   const [eventLocations, setEventLocations] = useState<EventLocation[]>([]);
-  const [selectedEvent, setSelectedEvent] = useState<EventLocation | null>(null);
+  const [mapboxToken, setMapboxToken] = useState<string>("");
+  const [showTokenInput, setShowTokenInput] = useState(true);
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["events-map"],
@@ -65,20 +68,24 @@ export default function MapPage() {
         })
       );
 
-      setEventLocations(locationsWithCoords);
+      setEventLocations(locationsWithCoords.filter(event => event.lat && event.lng));
     };
 
     fetchCoordinates();
   }, [events]);
 
-  const openInGoogleMaps = (location: string) => {
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
-    window.open(googleMapsUrl, '_blank');
+  const handleTokenSubmit = () => {
+    if (!mapboxToken.trim()) {
+      toast.error("Please enter a valid Mapbox token");
+      return;
+    }
+    setShowTokenInput(false);
+    toast.success("Mapbox token set successfully!");
   };
 
   if (isLoading) {
     return (
-      <section className="max-w-4xl mx-auto py-10 px-4">
+      <section className="max-w-6xl mx-auto py-10 px-4">
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin h-8 w-8 border-2 border-blue-400 border-t-transparent rounded-full"></div>
         </div>
@@ -87,69 +94,96 @@ export default function MapPage() {
   }
 
   return (
-    <section className="max-w-4xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-4 flex items-center gap-3 text-blue-200">
+    <section className="max-w-6xl mx-auto py-10 px-4">
+      <h1 className="text-3xl font-bold mb-6 flex items-center gap-3 text-blue-200">
         <span className="icon-round bg-blue-400/20 shadow-glass">
           <MapPin className="w-8 h-8 stroke-blue-300" />
         </span>
         Event Locations
       </h1>
 
+      {showTokenInput && (
+        <Card className="mb-6 bg-glass border border-border shadow-glass rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-blue-50 font-bold flex items-center gap-2">
+              <Key className="w-5 h-5 text-blue-400" />
+              Mapbox Configuration
+            </CardTitle>
+            <CardDescription className="text-blue-100/70">
+              Enter your Mapbox public token to display the interactive map. 
+              You can get one from <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-300 underline">mapbox.com</a>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Input
+                placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwi..."
+                value={mapboxToken}
+                onChange={(e) => setMapboxToken(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={handleTokenSubmit} variant="default">
+                Set Token
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {eventLocations.length === 0 ? (
         <div className="text-center py-12">
           <MapPin className="w-16 h-16 mx-auto mb-4 text-blue-400/60" />
-          <p className="text-blue-100/60 text-lg">No events with locations found</p>
-          <p className="text-blue-100/40 text-sm mt-2">Create events with valid addresses to see them on the map</p>
+          <p className="text-blue-100/60 text-lg">No events with valid addresses found</p>
+          <p className="text-blue-100/40 text-sm mt-2">Create events with complete street addresses to see them on the map</p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {eventLocations.map((event) => (
-            <Card key={event.id} className="bg-glass border border-border shadow-glass rounded-2xl">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-blue-50 font-bold flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-blue-400" />
-                      {event.title}
-                    </CardTitle>
-                    <CardDescription className="text-blue-100/70 mt-1">
-                      <div className="flex items-center gap-4 text-sm">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {new Date(event.date).toLocaleDateString('en-GB')}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {event.time}
-                        </span>
-                      </div>
-                    </CardDescription>
+        <div className="space-y-6">
+          {!showTokenInput && mapboxToken && (
+            <div className="h-96 bg-glass border border-border shadow-glass rounded-2xl overflow-hidden">
+              <InteractiveMap events={eventLocations} mapboxToken={mapboxToken} />
+            </div>
+          )}
+          
+          <div className="grid gap-4">
+            {eventLocations.map((event) => (
+              <Card key={event.id} className="bg-glass border border-border shadow-glass rounded-2xl">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-blue-50 font-bold flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-blue-400" />
+                        {event.title}
+                      </CardTitle>
+                      <CardDescription className="text-blue-100/70 mt-1">
+                        <div className="flex items-center gap-4 text-sm">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {new Date(event.date).toLocaleDateString('en-GB')}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            {event.time}
+                          </span>
+                        </div>
+                      </CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <div className="p-3 bg-blue-400/10 rounded-lg border border-blue-400/20">
-                    <p className="text-blue-100/90 text-sm font-medium">{event.location}</p>
-                    {event.lat && event.lng && (
-                      <p className="text-blue-100/60 text-xs mt-1">
-                        Coordinates: {event.lat.toFixed(6)}, {event.lng.toFixed(6)}
-                      </p>
-                    )}
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    <div className="p-3 bg-blue-400/10 rounded-lg border border-blue-400/20">
+                      <p className="text-blue-100/90 text-sm font-medium">{event.location}</p>
+                      {event.lat && event.lng && (
+                        <p className="text-blue-100/60 text-xs mt-1">
+                          Coordinates: {event.lat.toFixed(6)}, {event.lng.toFixed(6)}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  
-                  <Button
-                    onClick={() => openInGoogleMaps(event.location)}
-                    className="w-full glass border-2 border-green-400/60 text-green-100 font-bold tracking-wide rounded-full shadow-glass hover:bg-green-400/20"
-                    variant="outline"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    Get Directions in Google Maps
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
     </section>
