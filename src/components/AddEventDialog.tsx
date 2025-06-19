@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -141,7 +140,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
                     className="w-full justify-start text-left font-normal glass text-blue-100/90"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 icon-round bg-blue-400/20 text-blue-400" />
-                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    {date ? format(date, "dd/MM/yyyy") : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 glass" align="start">
@@ -156,7 +155,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               </Popover>
             </div>
             <div className="flex-1">
-              <label className="text-sm font-medium mb-1 block">Time</label>
+              <label className="text-sm font-medium mb-1 block">Time (24h)</label>
               <Input
                 type="time"
                 value={time}

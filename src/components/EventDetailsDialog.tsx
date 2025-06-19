@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import {
   Dialog,
@@ -11,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageCircle, Music, ExternalLink } from "lucide-react";
+import { format } from "date-fns";
 
 type Event = {
   id: number;
@@ -103,7 +103,7 @@ export default function EventDetailsDialog({
           <div>
             <div className="mb-2">
               <span className="text-sm font-semibold text-muted-foreground">Date:</span>
-              <span className="ml-2">{event.date}</span>
+              <span className="ml-2">{format(new Date(event.date), "dd/MM/yyyy")}</span>
             </div>
             <div className="mb-2">
               <span className="text-sm font-semibold text-muted-foreground">Time:</span>

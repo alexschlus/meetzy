@@ -1,4 +1,3 @@
-
 import { Calendar, MapPin, Clock, Plus, User, Trash2, Music, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 type SupabaseEvent = {
   id: string;
@@ -129,12 +129,12 @@ export default function EventsPage() {
       key={event.id}
       className={`bg-glass border border-border shadow-glass rounded-2xl ${isExpired ? 'opacity-60' : ''}`}
     >
-      <CardHeader>
+      <CardHeader className="pb-4">
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className="text-blue-50 font-bold">{event.title}</CardTitle>
             <CardDescription className="text-blue-100/70">
-              {event.date} - {event.time}
+              {format(new Date(event.date), "dd/MM/yyyy")} - {event.time}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -173,15 +173,18 @@ export default function EventsPage() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="text-blue-100/90 mb-4">{event.description}</div>
-        <div className="flex items-center gap-2 text-blue-100/70 mb-4">
+      <CardContent className="pt-0 space-y-4">
+        {event.description && (
+          <div className="text-blue-100/90">{event.description}</div>
+        )}
+        
+        <div className="flex items-center gap-2 text-blue-100/70">
           <MapPin className="w-4 h-4" />
           {event.location || "No location specified"}
         </div>
         
         {event.spotify_playlist_url && (
-          <div className="flex items-center gap-2 text-green-400 mb-4">
+          <div className="flex items-center gap-2 text-green-400">
             <Music className="w-4 h-4" />
             <a
               href={event.spotify_playlist_url}
@@ -196,13 +199,13 @@ export default function EventsPage() {
         )}
 
         {isExpired && (
-          <div className="text-red-400 text-sm mb-2 font-medium">
+          <div className="text-red-400 text-sm font-medium">
             Event Expired
           </div>
         )}
 
         {!isExpired && (
-          <div className="mb-4">
+          <div className="w-full">
             <EventAttendancePoll
               eventId={event.id}
               pollResponses={Array.isArray(event.poll_responses) ? event.poll_responses : []}
@@ -213,7 +216,7 @@ export default function EventsPage() {
 
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full mt-4"
           onClick={() => setSelectedEvent(event)}
         >
           View Details
