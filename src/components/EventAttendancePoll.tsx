@@ -72,21 +72,21 @@ export default function EventAttendancePoll({ eventId, pollResponses, onUpdate }
 
   return (
     <Card className="bg-glass border border-border shadow-glass rounded-xl">
-      <CardHeader>
+      <CardHeader className="pb-3">
         <CardTitle className="text-blue-50 text-lg flex items-center gap-2">
           <HelpCircle className="w-5 h-5" />
           Can you attend?
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex gap-2">
+      <CardContent className="pt-0">
+        <div className="space-y-3">
+          <div className="flex flex-col gap-2">
             <Button
               variant={userResponse?.response === "yes" ? "default" : "outline"}
               size="sm"
               onClick={() => handleVote("yes")}
               disabled={isLoading}
-              className="flex items-center gap-2"
+              className="flex items-center justify-start gap-2 w-full"
             >
               <CheckCircle className="w-4 h-4" />
               Yes ({counts.yes})
@@ -96,7 +96,7 @@ export default function EventAttendancePoll({ eventId, pollResponses, onUpdate }
               size="sm"
               onClick={() => handleVote("no")}
               disabled={isLoading}
-              className="flex items-center gap-2"
+              className="flex items-center justify-start gap-2 w-full"
             >
               <XCircle className="w-4 h-4" />
               No ({counts.no})
@@ -106,7 +106,7 @@ export default function EventAttendancePoll({ eventId, pollResponses, onUpdate }
               size="sm"
               onClick={() => handleVote("maybe")}
               disabled={isLoading}
-              className="flex items-center gap-2"
+              className="flex items-center justify-start gap-2 w-full"
             >
               <HelpCircle className="w-4 h-4" />
               Maybe ({counts.maybe})

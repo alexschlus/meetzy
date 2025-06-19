@@ -155,12 +155,14 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               </Popover>
             </div>
             <div className="flex-1">
-              <label className="text-sm font-medium mb-1 block">Time (24h)</label>
+              <label className="text-sm font-medium mb-1 block">Time (24h format)</label>
               <Input
                 type="time"
                 value={time}
                 onChange={e => setTime(e.target.value)}
                 required
+                step="300"
+                className="[&::-webkit-calendar-picker-indicator]:cursor-pointer"
               />
             </div>
           </div>
