@@ -15,22 +15,21 @@ type EventLocation = {
 
 type InteractiveMapProps = {
   events: EventLocation[];
-  mapboxToken: string;
 };
 
-export default function InteractiveMap({ events, mapboxToken }: InteractiveMapProps) {
+export default function InteractiveMap({ events }: InteractiveMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventLocation | null>(null);
 
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+    if (!mapContainer.current) return;
 
     // Dynamically import Mapbox GL JS
     import('mapbox-gl').then((mapboxgl) => {
       import('mapbox-gl/dist/mapbox-gl.css');
       
-      mapboxgl.default.accessToken = mapboxToken;
+      mapboxgl.default.accessToken = 'pk.eyJ1IjoiYWxleHNjaGx1cyIsImEiOiJjbWMzOWJoYmkwMmRtMmlzYXZ3eGRncWN3In0.jZ0Bmq3M4THobJmWmPEMHA';
       
       map.current = new mapboxgl.default.Map({
         container: mapContainer.current!,
@@ -77,7 +76,7 @@ export default function InteractiveMap({ events, mapboxToken }: InteractiveMapPr
         map.current.remove();
       }
     };
-  }, [events, mapboxToken]);
+  }, [events]);
 
   const openInGoogleMaps = (location: string) => {
     const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;

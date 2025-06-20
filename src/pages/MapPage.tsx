@@ -1,13 +1,10 @@
 
 import { useEffect, useState } from "react";
-import { MapPin, ExternalLink, Calendar, Clock, Key } from "lucide-react";
+import { MapPin, Calendar, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import InteractiveMap from "@/components/InteractiveMap";
 
 type EventLocation = {
@@ -23,8 +20,6 @@ type EventLocation = {
 export default function MapPage() {
   const { user } = useAuth();
   const [eventLocations, setEventLocations] = useState<EventLocation[]>([]);
-  const [mapboxToken, setMapboxToken] = useState<string>("");
-  const [showTokenInput, setShowTokenInput] = useState(true);
 
   const { data: events = [], isLoading } = useQuery({
     queryKey: ["events-map"],
@@ -74,15 +69,6 @@ export default function MapPage() {
     fetchCoordinates();
   }, [events]);
 
-  const handleTokenSubmit = () => {
-    if (!mapboxToken.trim()) {
-      toast.error("Please enter a valid Mapbox token");
-      return;
-    }
-    setShowTokenInput(false);
-    toast.success("Mapbox token set successfully!");
-  };
-
   if (isLoading) {
     return (
       <section className="max-w-6xl mx-auto py-10 px-4">
@@ -102,34 +88,6 @@ export default function MapPage() {
         Event Locations
       </h1>
 
-      {showTokenInput && (
-        <Card className="mb-6 bg-glass border border-border shadow-glass rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-blue-50 font-bold flex items-center gap-2">
-              <Key className="w-5 h-5 text-blue-400" />
-              Mapbox Configuration
-            </CardTitle>
-            <CardDescription className="text-blue-100/70">
-              Enter your Mapbox public token to display the interactive map. 
-              You can get one from <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-300 underline">mapbox.com</a>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-3">
-              <Input
-                placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwi..."
-                value={mapboxToken}
-                onChange={(e) => setMapboxToken(e.target.value)}
-                className="flex-1"
-              />
-              <Button onClick={handleTokenSubmit} variant="default">
-                Set Token
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {eventLocations.length === 0 ? (
         <div className="text-center py-12">
           <MapPin className="w-16 h-16 mx-auto mb-4 text-blue-400/60" />
@@ -138,11 +96,9 @@ export default function MapPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {!showTokenInput && mapboxToken && (
-            <div className="h-96 bg-glass border border-border shadow-glass rounded-2xl overflow-hidden">
-              <InteractiveMap events={eventLocations} mapboxToken={mapboxToken} />
-            </div>
-          )}
+          <div className="h-96 bg-glass border border-border shadow-glass rounded-2xl overflow-hidden">
+            <InteractiveMap events={eventLocations} />
+          </div>
           
           <div className="grid gap-4">
             {eventLocations.map((event) => (
