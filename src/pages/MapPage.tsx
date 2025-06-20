@@ -63,7 +63,12 @@ export default function MapPage() {
         })
       );
 
-      setEventLocations(locationsWithCoords.filter(event => event.lat && event.lng) as EventLocation[]);
+      // Filter events that have coordinates and type them properly
+      const eventsWithCoords = locationsWithCoords.filter((event): event is EventLocation & { lat: number; lng: number } => 
+        event.lat !== undefined && event.lng !== undefined
+      );
+      
+      setEventLocations(eventsWithCoords);
     };
 
     fetchCoordinates();

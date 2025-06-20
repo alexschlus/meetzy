@@ -24,16 +24,31 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
   const [loading, setLoading] = useState(false);
 
   // Fetch all profiles except current user
-  const { data: profiles = [], isLoading } = useQuery({
+  const { data: profiles = [], isLoading, error } = useQuery({
     queryKey: ["all-profiles"],
     queryFn: async () => {
-      if (!user) return [];
+      console.log("Fetching profiles...");
+      console.log("Current user:", user);
+      
+      if (!user) {
+        console.log("No user found, returning empty array");
+        return [];
+      }
+      
       const { data, error } = await supabase
         .from("profiles")
         .select("id, name, email, avatar")
         .neq("id", user.id)
         .order("name");
-      if (error) throw error;
+        
+      console.log("Supabase query result:", { data, error });
+      
+      if (error) {
+        console.error("Error fetching profiles:", error);
+        throw error;
+      }
+      
+      console.log("Profiles fetched:", data);
       return data || [];
     },
     enabled: !!user && open,
@@ -41,6 +56,7 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
 
   // Filter profiles based on search query
   const filteredProfiles = useMemo(() => {
+    console.log("Filtering profiles:", profiles, "with query:", searchQuery);
     if (!searchQuery.trim()) return profiles;
     return profiles.filter(profile =>
       profile.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -143,6 +159,17 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
             />
           </div>
 
+          {/* Debug info */}
+          {open && (
+            <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
+              <p>Debug: User: {user?.id ? 'Logged in' : 'Not logged in'}</p>
+              <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
+              <p>Error: {error ? error.message : 'None'}</p>
+              <p>Profiles count: {profiles.length}</p>
+              <p>Filtered count: {filteredProfiles.length}</p>
+            </div>
+          )}
+
           {/* User list */}
           <div className="max-h-64 overflow-y-auto space-y-2">
             {isLoading ? (
@@ -150,11 +177,18 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
                 <div className="animate-spin h-6 w-6 border-2 border-blue-400 border-t-transparent rounded-full mx-auto"></div>
                 <p className="text-sm text-gray-500 mt-2">Loading users...</p>
               </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-sm text-red-500">Error loading users: {error.message}</p>
+              </div>
             ) : filteredProfiles.length === 0 ? (
               <div className="text-center py-8">
                 <User className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm text-gray-500">
                   {searchQuery ? "No users found matching your search" : "No other users available"}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Total profiles in database: {profiles.length}
                 </p>
               </div>
             ) : (
