@@ -1,7 +1,7 @@
 
 import { User } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import AddFriendDialog from "@/components/AddFriendDialog";
+import UserSelectionDialog from "@/components/UserSelectionDialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -116,7 +116,7 @@ export default function FriendsPage() {
         Friends
       </h1>
       <div className="flex items-center mb-8 gap-2">
-        <AddFriendDialog onAdd={() => queryClient.invalidateQueries({ queryKey: ["friends"] })} />
+        <UserSelectionDialog onAdd={() => queryClient.invalidateQueries({ queryKey: ["friends"] })} />
       </div>
       {/* Accepted friends */}
       <div>

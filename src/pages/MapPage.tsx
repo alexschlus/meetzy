@@ -63,7 +63,7 @@ export default function MapPage() {
         })
       );
 
-      setEventLocations(locationsWithCoords.filter(event => event.lat && event.lng));
+      setEventLocations(locationsWithCoords.filter(event => event.lat && event.lng) as EventLocation[]);
     };
 
     fetchCoordinates();
