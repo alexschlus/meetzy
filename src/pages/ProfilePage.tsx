@@ -41,6 +41,11 @@ export default function ProfilePage() {
     setEditLoading(false);
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/auth", { replace: true });
+  };
+
   return (
     <section className="w-full max-w-md mx-auto py-10 px-4">
       <div className="flex items-center gap-5 mb-8">
@@ -76,7 +81,7 @@ export default function ProfilePage() {
         </ul>
       </div>
       <div className="mt-8 text-center">
-        <Button variant="outline" className="rounded-full px-6" onClick={signOut}>
+        <Button variant="outline" className="rounded-full px-6" onClick={handleSignOut}>
           Sign out
         </Button>
       </div>

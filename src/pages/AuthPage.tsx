@@ -48,7 +48,7 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-background font-playfair relative">
       <Logo />
-      <div className="bg-glass mt-6 p-8 rounded-2xl w-full max-w-md shadow-glass">
+      <div className="bg-glass mt-6 p-8 rounded-2xl w-full max-w-md shadow-glass border border-border">
         <h1 className="text-2xl font-bold mb-4 text-blue-200 text-center">
           {view === "login" ? "Login to Meetzy" : "Create your Meetzy Account"}
         </h1>
@@ -60,6 +60,7 @@ export default function AuthPage() {
               onChange={e => setName(e.target.value)}
               disabled={submitting}
               autoFocus
+              className="bg-blue-950/20 border-blue-400/30 text-blue-100 placeholder:text-blue-300/60"
             />
           )}
           <Input
@@ -69,6 +70,7 @@ export default function AuthPage() {
             onChange={e => setEmail(e.target.value)}
             autoFocus={view === "login"}
             disabled={submitting}
+            className="bg-blue-950/20 border-blue-400/30 text-blue-100 placeholder:text-blue-300/60"
           />
           <Input
             placeholder="Password"
@@ -76,28 +78,37 @@ export default function AuthPage() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             disabled={submitting}
+            className="bg-blue-950/20 border-blue-400/30 text-blue-100 placeholder:text-blue-300/60"
           />
           <Button
             type="submit"
-            className="w-full font-bold text-base"
+            className="w-full font-bold text-base bg-blue-500 hover:bg-blue-600 text-white"
             disabled={submitting}
           >
-            {view === "login" ? "Sign In" : "Sign Up"}
+            {view === "login" ? "Login" : "Sign Up"}
           </Button>
         </form>
-        <div className="mt-4 text-center text-blue-100">
+        <div className="mt-4 text-center text-blue-200">
           {view === "login" ? (
             <>
               Don't have an account?{" "}
-              <button className="underline text-blue-200" onClick={() => setView("signup")} disabled={submitting}>
+              <button 
+                className="underline text-blue-300 hover:text-blue-200 font-medium" 
+                onClick={() => setView("signup")} 
+                disabled={submitting}
+              >
                 Sign Up
               </button>
             </>
           ) : (
             <>
               Already have an account?{" "}
-              <button className="underline text-blue-200" onClick={() => setView("login")} disabled={submitting}>
-                Log In
+              <button 
+                className="underline text-blue-300 hover:text-blue-200 font-medium" 
+                onClick={() => setView("login")} 
+                disabled={submitting}
+              >
+                Login
               </button>
             </>
           )}

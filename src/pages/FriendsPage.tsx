@@ -178,6 +178,7 @@ export default function FriendsPage() {
                         onClick={() => acceptMutation.mutate(f.id)}
                         disabled={loading}
                         size="sm"
+                        className="bg-green-500 hover:bg-green-600 text-white"
                       >
                         Accept
                       </Button>
@@ -186,6 +187,7 @@ export default function FriendsPage() {
                         disabled={loading}
                         size="sm"
                         variant="outline"
+                        className="border-red-400/50 text-red-300 hover:bg-red-500/20"
                       >
                         Decline
                       </Button>
