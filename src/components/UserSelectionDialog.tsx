@@ -172,7 +172,7 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
               <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-muted-foreground">
               Found: {profiles.length} users
             </span>
           </div>
@@ -182,23 +182,23 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
             {isLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin h-6 w-6 border-2 border-blue-400 border-t-transparent rounded-full mx-auto"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading users...</p>
+                <p className="text-sm text-muted-foreground mt-2">Loading users...</p>
               </div>
             ) : error ? (
               <div className="text-center py-8">
-                <p className="text-sm text-red-500">Error loading users: {error.message}</p>
+                <p className="text-sm text-destructive">Error loading users: {error.message}</p>
                 <Button variant="outline" size="sm" className="mt-2" onClick={handleRefresh}>
                   Try Again
                 </Button>
               </div>
             ) : filteredProfiles.length === 0 ? (
               <div className="text-center py-8">
-                <User className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-500">
+                <User className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
                   {searchQuery ? "No users found matching your search" : "No other users available"}
                 </p>
                 {profiles.length === 0 && (
-                  <div className="mt-2 text-xs text-red-500">
+                  <div className="mt-2 text-xs text-destructive">
                     <p>Try refreshing to load users</p>
                   </div>
                 )}
@@ -207,28 +207,28 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
               filteredProfiles.map((profile) => (
                 <div
                   key={profile.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex items-center justify-between p-3 bg-glass border border-border shadow-glass rounded-2xl hover:bg-glass-light transition-all duration-200"
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar className="w-10 h-10">
+                    <Avatar className="w-10 h-10 border-2 border-blue-400/30 shadow-glass">
                       {profile.avatar ? (
                         <AvatarImage src={profile.avatar} alt={profile.name} />
                       ) : (
-                        <AvatarFallback>
+                        <AvatarFallback className="bg-blue-400/20 text-blue-100">
                           {profile.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       )}
                     </Avatar>
                     <div>
-                      <p className="font-medium text-sm">{profile.name}</p>
-                      <p className="text-xs text-gray-500">{profile.email}</p>
+                      <p className="font-medium text-sm text-blue-50">{profile.name}</p>
+                      <p className="text-xs text-blue-100/70">{profile.email}</p>
                     </div>
                   </div>
                   <Button
                     size="sm"
                     onClick={() => handleSendFriendRequest(profile)}
                     disabled={loading}
-                    className="text-xs"
+                    className="text-xs bg-blue-500 hover:bg-blue-600 text-white"
                   >
                     Add
                   </Button>
