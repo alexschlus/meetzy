@@ -8,7 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Search, User } from "lucide-react";
+import { Search, User, RefreshCw } from "lucide-react";
 
 type Profile = {
   id: string;
@@ -35,21 +35,14 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
         return [];
       }
       
-      // First, let's check how many total profiles exist
-      const { data: allProfiles, error: allError } = await supabase
-        .from("profiles")
-        .select("id, name, email, avatar");
-        
-      console.log("All profiles in database:", { allProfiles, allError });
-      
-      // Now get profiles excluding current user
+      // Get profiles excluding current user
       const { data, error } = await supabase
         .from("profiles")
         .select("id, name, email, avatar")
         .neq("id", user.id)
         .order("name");
         
-      console.log("Filtered profiles query result:", { data, error });
+      console.log("Profiles query result:", { data, error });
       console.log("User ID being excluded:", user.id);
       
       if (error) {
@@ -173,29 +166,16 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
             />
           </div>
 
-          {/* Refresh button for debugging */}
+          {/* Refresh button */}
           <div className="flex justify-between items-center">
-            <Button variant="outline" size="sm" onClick={handleRefresh}>
-              Refresh Profiles
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
             </Button>
             <span className="text-xs text-gray-500">
-              Found: {profiles.length} profiles
+              Found: {profiles.length} users
             </span>
           </div>
-
-          {/* Enhanced debug info */}
-          {open && (
-            <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
-              <p>Debug Info:</p>
-              <p>• Current User ID: {user?.id || 'None'}</p>
-              <p>• User Logged In: {user ? 'Yes' : 'No'}</p>
-              <p>• Loading: {isLoading ? 'Yes' : 'No'}</p>
-              <p>• Error: {error ? error.message : 'None'}</p>
-              <p>• Total Profiles: {profiles.length}</p>
-              <p>• Filtered Profiles: {filteredProfiles.length}</p>
-              <p>• Dialog Open: {open ? 'Yes' : 'No'}</p>
-            </div>
-          )}
 
           {/* User list */}
           <div className="max-h-64 overflow-y-auto space-y-2">
@@ -217,13 +197,9 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
                 <p className="text-sm text-gray-500">
                   {searchQuery ? "No users found matching your search" : "No other users available"}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Total profiles in database: {profiles.length}
-                </p>
                 {profiles.length === 0 && (
                   <div className="mt-2 text-xs text-red-500">
-                    <p>This might indicate that user profiles aren't being created properly.</p>
-                    <p>Check the database trigger or create profiles manually.</p>
+                    <p>Try refreshing to load users</p>
                   </div>
                 )}
               </div>

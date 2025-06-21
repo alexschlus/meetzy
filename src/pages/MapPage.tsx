@@ -13,8 +13,8 @@ type EventLocation = {
   location: string;
   date: string;
   time: string;
-  lat?: number;
-  lng?: number;
+  lat: number;
+  lng: number;
 };
 
 export default function MapPage() {
@@ -55,20 +55,22 @@ export default function MapPage() {
                 lng: parseFloat(data[0].lon),
               };
             }
-            return event;
+            return null;
           } catch (error) {
             console.error("Geocoding error:", error);
-            return event;
+            return null;
           }
         })
       );
 
-      // Filter events that have coordinates and type them properly
-      const eventsWithCoords = locationsWithCoords.filter((event): event is EventLocation & { lat: number; lng: number } => 
-        event.lat !== undefined && event.lng !== undefined
+      // Filter out null results and ensure we have valid coordinates
+      const validLocations = locationsWithCoords.filter((event): event is EventLocation => 
+        event !== null && 
+        !isNaN(event.lat) && 
+        !isNaN(event.lng)
       );
       
-      setEventLocations(eventsWithCoords);
+      setEventLocations(validLocations);
     };
 
     fetchCoordinates();
@@ -134,11 +136,9 @@ export default function MapPage() {
                   <div className="space-y-3">
                     <div className="p-3 bg-blue-400/10 rounded-lg border border-blue-400/20">
                       <p className="text-blue-100/90 text-sm font-medium">{event.location}</p>
-                      {event.lat && event.lng && (
-                        <p className="text-blue-100/60 text-xs mt-1">
-                          Coordinates: {event.lat.toFixed(6)}, {event.lng.toFixed(6)}
-                        </p>
-                      )}
+                      <p className="text-blue-100/60 text-xs mt-1">
+                        Coordinates: {event.lat.toFixed(6)}, {event.lng.toFixed(6)}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
