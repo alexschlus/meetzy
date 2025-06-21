@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,6 +20,7 @@ export function useAuth() {
     // Subscribe to auth changes FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        console.log("Auth state change:", _event, session?.user?.id);
         setSession(session);
         if (session?.user) {
           setTimeout(() => loadProfile(session.user.id), 0);
@@ -44,17 +44,23 @@ export function useAuth() {
 
   const loadProfile = useCallback(async (id: string) => {
     setLoading(true);
+    console.log("Loading profile for user:", id);
+    
     const { data, error } = await supabase
       .from("profiles")
       .select("*")
       .eq("id", id)
       .maybeSingle();
 
+    console.log("Profile query result:", { data, error });
+
     if (error) {
+      console.error("Profile load error:", error);
       setUser(null);
     } else if (data) {
       setUser(data);
     } else {
+      console.log("No profile found, this might indicate the trigger didn't fire");
       setUser(null);
     }
     setLoading(false);
@@ -78,11 +84,13 @@ export function useAuth() {
     return error;
   }, []);
 
-  // Signup
+  // Signup with better error handling and profile creation verification
   const signUp = useCallback(async (name: string, email: string, password: string) => {
+    console.log("Starting signup process for:", email);
+    
     // Redirect after email registration - ensure it goes to homepage
     const redirectTo = `${window.location.origin}/`;
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -90,6 +98,30 @@ export function useAuth() {
         data: { name },
       }
     });
+    
+    console.log("Signup result:", { data, error });
+    
+    // If signup was successful and user is immediately available (email confirmation disabled)
+    if (!error && data.user && !data.user.email_confirmed_at) {
+      console.log("User created but needs email confirmation");
+    } else if (!error && data.user && data.user.email_confirmed_at) {
+      console.log("User created and confirmed, checking profile...");
+      // Give the trigger a moment to fire
+      setTimeout(async () => {
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        
+        console.log("Profile check after signup:", { profile, profileError });
+        
+        if (!profile && !profileError) {
+          console.warn("Profile wasn't created by trigger, this indicates an issue with the database trigger");
+        }
+      }, 1000);
+    }
+    
     return error;
   }, []);
 

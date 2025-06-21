@@ -24,10 +24,10 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
   const [loading, setLoading] = useState(false);
 
   // Fetch all profiles except current user
-  const { data: profiles = [], isLoading, error } = useQuery({
+  const { data: profiles = [], isLoading, error, refetch } = useQuery({
     queryKey: ["all-profiles"],
     queryFn: async () => {
-      console.log("Fetching profiles...");
+      console.log("=== FETCHING PROFILES DEBUG ===");
       console.log("Current user:", user);
       
       if (!user) {
@@ -35,20 +35,29 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
         return [];
       }
       
+      // First, let's check how many total profiles exist
+      const { data: allProfiles, error: allError } = await supabase
+        .from("profiles")
+        .select("id, name, email, avatar");
+        
+      console.log("All profiles in database:", { allProfiles, allError });
+      
+      // Now get profiles excluding current user
       const { data, error } = await supabase
         .from("profiles")
         .select("id, name, email, avatar")
         .neq("id", user.id)
         .order("name");
         
-      console.log("Supabase query result:", { data, error });
+      console.log("Filtered profiles query result:", { data, error });
+      console.log("User ID being excluded:", user.id);
       
       if (error) {
         console.error("Error fetching profiles:", error);
         throw error;
       }
       
-      console.log("Profiles fetched:", data);
+      console.log("Final profiles to return:", data);
       return data || [];
     },
     enabled: !!user && open,
@@ -134,6 +143,11 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
     setLoading(false);
   };
 
+  const handleRefresh = () => {
+    console.log("Manual refresh triggered");
+    refetch();
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -159,14 +173,27 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
             />
           </div>
 
-          {/* Debug info */}
+          {/* Refresh button for debugging */}
+          <div className="flex justify-between items-center">
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              Refresh Profiles
+            </Button>
+            <span className="text-xs text-gray-500">
+              Found: {profiles.length} profiles
+            </span>
+          </div>
+
+          {/* Enhanced debug info */}
           {open && (
             <div className="text-xs text-gray-500 p-2 bg-gray-100 rounded">
-              <p>Debug: User: {user?.id ? 'Logged in' : 'Not logged in'}</p>
-              <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
-              <p>Error: {error ? error.message : 'None'}</p>
-              <p>Profiles count: {profiles.length}</p>
-              <p>Filtered count: {filteredProfiles.length}</p>
+              <p>Debug Info:</p>
+              <p>• Current User ID: {user?.id || 'None'}</p>
+              <p>• User Logged In: {user ? 'Yes' : 'No'}</p>
+              <p>• Loading: {isLoading ? 'Yes' : 'No'}</p>
+              <p>• Error: {error ? error.message : 'None'}</p>
+              <p>• Total Profiles: {profiles.length}</p>
+              <p>• Filtered Profiles: {filteredProfiles.length}</p>
+              <p>• Dialog Open: {open ? 'Yes' : 'No'}</p>
             </div>
           )}
 
@@ -180,6 +207,9 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
             ) : error ? (
               <div className="text-center py-8">
                 <p className="text-sm text-red-500">Error loading users: {error.message}</p>
+                <Button variant="outline" size="sm" className="mt-2" onClick={handleRefresh}>
+                  Try Again
+                </Button>
               </div>
             ) : filteredProfiles.length === 0 ? (
               <div className="text-center py-8">
@@ -190,6 +220,12 @@ export default function UserSelectionDialog({ onAdd }: { onAdd?: () => void }) {
                 <p className="text-xs text-gray-400 mt-1">
                   Total profiles in database: {profiles.length}
                 </p>
+                {profiles.length === 0 && (
+                  <div className="mt-2 text-xs text-red-500">
+                    <p>This might indicate that user profiles aren't being created properly.</p>
+                    <p>Check the database trigger or create profiles manually.</p>
+                  </div>
+                )}
               </div>
             ) : (
               filteredProfiles.map((profile) => (
