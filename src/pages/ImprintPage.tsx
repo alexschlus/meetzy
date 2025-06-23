@@ -34,7 +34,7 @@ const ImprintPage = () => {
                   Email: mail@alexschlus.de<br />
                   Phone: +49 1633839274
                 </p>
-                <p><strong>Responsible for content:</strong> [Name of responsible person]</p>
+                <p><strong>Responsible for content:</strong>Alexander Schlüssel</p>
               </div>
             </section>
 
