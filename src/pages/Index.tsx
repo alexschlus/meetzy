@@ -1,13 +1,39 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
 
+  // Redirect to auth page if not logged in, or to events if logged in
+  useEffect(() => {
+    if (!loading) {
+      if (user) {
+        navigate("/events", { replace: true });
+      } else {
+        navigate("/auth", { replace: true });
+      }
+    }
+  }, [user, loading, navigate]);
+
+  // Show loading state while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col font-playfair relative">
+        <header className="absolute left-0 top-0 p-4">
+          <Logo />
+        </header>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-blue-200 animate-pulse">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // This should not be reached due to the useEffect redirect, but keeping as fallback
   return (
     <div className="min-h-screen bg-background flex flex-col font-playfair relative">
       <header className="absolute left-0 top-0 p-4">
@@ -24,20 +50,10 @@ const Index = () => {
           <Button
             variant="default"
             className="px-8 py-3 rounded-full font-bold text-blue-50 text-lg glass border-2 border-blue-400 shadow-glass hover:bg-blue-400/30 hover:text-white transition"
-            onClick={() => navigate(user ? "/events" : "/auth", { replace: true })}
-            disabled={loading}
+            onClick={() => navigate("/auth")}
           >
-            {user ? "Go to meetzy" : "Sign in / Sign up"}
+            Get Started
           </Button>
-          {!user && !loading && (
-            <Button
-              variant="outline"
-              className="px-8 py-3 rounded-full font-bold text-blue-50 text-lg glass border-2 border-blue-400 shadow-glass"
-              onClick={() => navigate("/auth")}
-            >
-              Login / Register
-            </Button>
-          )}
         </div>
       </div>
     </div>
