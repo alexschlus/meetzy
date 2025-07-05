@@ -38,6 +38,20 @@ type SupabaseEvent = {
   updated_at: string;
 };
 
+type Profile = {
+  id: string;
+  name: string;
+  avatar: string | null;
+  email: string;
+};
+
+type Friend = {
+  id: number;
+  name: string;
+  avatar: string;
+  status: string;
+};
+
 export default function EventsPage() {
   const { user } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<SupabaseEvent | null>(null);
@@ -58,11 +72,35 @@ export default function EventsPage() {
     enabled: !!user,
   });
 
-  // Mock friends data for the dialogs
-  const mockFriends = [
-    { id: 1, name: "Alice", avatar: "", status: "online" },
-    { id: 2, name: "Bob", avatar: "", status: "offline" },
-  ];
+  // Fetch real friends data
+  const { data: friendsData = [] } = useQuery({
+    queryKey: ["friends-for-events"],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("friends")
+        .select(
+          "*,requester:profiles!requester_id(name,avatar,email,id),addressee:profiles!addressee_id(name,avatar,email,id)"
+        )
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`)
+        .eq("status", "accepted")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  // Transform friends data to the expected format
+  const friends: Friend[] = friendsData.map((friendRow: any, index: number) => {
+    const profile = friendRow.requester_id === user?.id ? friendRow.addressee : friendRow.requester;
+    return {
+      id: index + 1, // AddEventDialog expects numeric ids
+      name: profile?.name || "Unknown",
+      avatar: profile?.avatar || "",
+      status: "online"
+    };
+  });
 
   const handleSendMessage = (eventId: string, message: {sender: string, text: string, timestamp: string}) => {
     setMessages(prev => ({
@@ -234,7 +272,7 @@ export default function EventsPage() {
         Events
       </h1>
       <div className="flex items-center mb-8 gap-2">
-        <AddEventDialog friends={mockFriends} onAdd={() => refetch()} />
+        <AddEventDialog friends={friends} onAdd={() => refetch()} />
       </div>
       
       {isLoading ? (
@@ -278,7 +316,7 @@ export default function EventsPage() {
         } : null}
         open={!!selectedEvent}
         onOpenChange={() => setSelectedEvent(null)}
-        friends={mockFriends}
+        friends={friends}
         messages={selectedEvent ? (messages[selectedEvent.id] || []) : []}
         onSendMessage={(message) => selectedEvent && handleSendMessage(selectedEvent.id, message)}
       />

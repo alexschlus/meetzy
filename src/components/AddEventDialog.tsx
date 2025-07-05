@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -287,27 +288,37 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
               <label className="text-sm font-medium mb-1 block flex items-center gap-1">
                 <Users className="h-4 w-4 icon-round bg-blue-400/20 text-blue-400" /> Invite Friends
               </label>
-              <div className="flex flex-wrap gap-2 mt-1">
-                {friends.map(friend => (
-                  <button
-                    type="button"
-                    key={friend.id}
-                    className={`flex items-center border px-2 py-1 text-sm rounded-full transition-colors glass shadow glass
-                      ${invitees.includes(friend.name)
-                        ? "bg-blue-400/80 border-blue-400 text-blue-50 shadow-glass"
-                        : "bg-gray-600/40 border-gray-600 text-gray-100"}
-                      `}
-                    onClick={() => handleToggleInvite(friend.name)}
-                  >
-                    <img
-                      src={friend.avatar}
-                      alt={friend.name}
-                      className="w-5 h-5 rounded-full mr-1 border-2 border-blue-300 bg-glass object-cover"
-                    />
-                    {friend.name}
-                  </button>
-                ))}
-              </div>
+              {friends.length === 0 ? (
+                <p className="text-blue-200/60 text-sm mt-1">No friends to invite yet. Add some friends first!</p>
+              ) : (
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {friends.map(friend => (
+                    <button
+                      type="button"
+                      key={friend.id}
+                      className={`flex items-center border px-3 py-2 text-sm rounded-full transition-all duration-200 glass shadow-glass
+                        ${invitees.includes(friend.name)
+                          ? "bg-blue-500/90 border-blue-400 text-white shadow-lg scale-105" 
+                          : "bg-blue-900/40 border-blue-600/50 text-blue-100 hover:bg-blue-800/50 hover:border-blue-500"}
+                        `}
+                      onClick={() => handleToggleInvite(friend.name)}
+                    >
+                      {friend.avatar ? (
+                        <img
+                          src={friend.avatar}
+                          alt={friend.name}
+                          className="w-5 h-5 rounded-full mr-2 border-2 border-blue-300 bg-glass object-cover"
+                        />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full mr-2 border-2 border-blue-300 bg-blue-400/20 flex items-center justify-center text-xs font-bold text-blue-300">
+                          {friend.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      {friend.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <DialogFooter>
               <DialogClose asChild>
