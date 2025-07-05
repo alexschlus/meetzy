@@ -10,7 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 export default function AuthPage() {
   const { signIn, signUp, user, loading } = useAuth();
   const navigate = useNavigate();
-  const [view, setView] = useState<"login" | "signup">("login");
+  const [view, setView] = useState<"login" | "signup" | "landing">("landing");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState(""); // for signup
@@ -43,6 +43,35 @@ export default function AuthPage() {
       }
     }
     setSubmitting(false);
+  }
+
+  // Landing page with two buttons
+  if (view === "landing") {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center bg-background font-playfair relative">
+        <Logo />
+        <div className="bg-glass mt-6 p-8 rounded-2xl w-full max-w-md shadow-glass border border-border">
+          <h1 className="text-2xl font-bold mb-6 text-blue-200 text-center">
+            Welcome to Meetzy
+          </h1>
+          <div className="space-y-4">
+            <Button
+              onClick={() => setView("login")}
+              className="w-full font-bold text-base bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Login
+            </Button>
+            <Button
+              onClick={() => setView("signup")}
+              variant="outline"
+              className="w-full font-bold text-base border-blue-400/30 text-blue-200 hover:bg-blue-400/10"
+            >
+              Sign Up
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -112,6 +141,14 @@ export default function AuthPage() {
               </button>
             </>
           )}
+        </div>
+        <div className="mt-4 text-center">
+          <button 
+            className="text-blue-300/70 hover:text-blue-200 text-sm" 
+            onClick={() => setView("landing")}
+          >
+            ← Back
+          </button>
         </div>
       </div>
     </div>
