@@ -40,11 +40,11 @@ export default function FriendsSection({
 }: FriendsSectionProps) {
   return (
     <div>
-      <h2 className="text-blue-100/80 font-semibold mb-3 text-lg">{title}</h2>
+      <h2 className="text-blue-100/80 font-semibold mb-3 text-base md:text-lg">{title}</h2>
       {friends.length === 0 ? (
-        <div className="text-blue-100/60 mb-8">{emptyMessage}</div>
+        <div className="text-blue-100/60 mb-6 md:mb-8 text-sm md:text-base">{emptyMessage}</div>
       ) : (
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
           {friends.map((f: any) => {
             const profile = type === "accepted" 
               ? (f.requester_id === currentUserId ? f.addressee : f.requester)

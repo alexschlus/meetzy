@@ -19,26 +19,26 @@ type FriendCardProps = {
 
 export default function FriendCard({ profile, type, onAccept, onDecline, loading }: FriendCardProps) {
   return (
-    <div className="flex items-center bg-glass border border-border shadow-glass rounded-2xl p-4">
-      <Avatar className="w-16 h-16 mr-4 border-2 border-blue-400 shadow-glass bg-blue-300/10">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center bg-glass border border-border shadow-glass rounded-2xl p-3 md:p-4 space-y-3 sm:space-y-0">
+      <Avatar className="w-12 h-12 md:w-16 md:h-16 sm:mr-4 border-2 border-blue-400 shadow-glass bg-blue-300/10 mx-auto sm:mx-0">
         {profile.avatar ? (
           <AvatarImage src={profile.avatar} alt={profile.name} className="object-cover" />
         ) : (
-          <AvatarFallback className="text-lg">
+          <AvatarFallback className="text-sm md:text-lg">
             {profile.name?.charAt(0) ?? "?"}
           </AvatarFallback>
         )}
       </Avatar>
-      <div className="flex-1">
-        <div className="font-semibold text-blue-50">{profile.name}</div>
+      <div className="flex-1 text-center sm:text-left w-full sm:w-auto">
+        <div className="font-semibold text-blue-50 text-sm md:text-base">{profile.name}</div>
         <div className="text-xs text-blue-100/70">{profile.email}</div>
         {type === "incoming" && (
-          <div className="flex gap-3 mt-2">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2 w-full sm:w-auto">
             <Button
               onClick={onAccept}
               disabled={loading}
               size="sm"
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="bg-green-500 hover:bg-green-600 text-white text-xs w-full sm:w-auto"
             >
               Accept
             </Button>
@@ -47,7 +47,7 @@ export default function FriendCard({ profile, type, onAccept, onDecline, loading
               disabled={loading}
               size="sm"
               variant="outline"
-              className="border-red-400/50 text-red-300 hover:bg-red-500/20"
+              className="border-red-400/50 text-red-300 hover:bg-red-500/20 text-xs w-full sm:w-auto"
             >
               Decline
             </Button>

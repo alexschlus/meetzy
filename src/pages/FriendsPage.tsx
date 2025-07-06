@@ -107,14 +107,14 @@ export default function FriendsPage() {
   );
 
   return (
-    <section className="max-w-4xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-4 flex items-center gap-3 text-blue-200">
-        <span className="icon-round bg-blue-400/20 shadow-glass">
-          <User className="w-8 h-8 stroke-blue-300" />
-        </span>{" "}
+    <section className="max-w-4xl mx-auto py-6 md:py-10 px-4">
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 flex items-center gap-3 text-blue-200">
+        <span className="icon-round bg-blue-400/20 shadow-glass p-2 md:p-3">
+          <User className="w-6 h-6 md:w-8 md:h-8 stroke-blue-300" />
+        </span>
         Friends
       </h1>
-      <div className="flex items-center mb-8 gap-2">
+      <div className="flex items-center mb-6 md:mb-8 gap-2">
         <UserSelectionDialog onAdd={() => queryClient.invalidateQueries({ queryKey: ["friends"] })} />
       </div>
 
