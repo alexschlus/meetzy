@@ -43,7 +43,7 @@ export default function BottomTabsLayout() {
       <main className="flex-1 w-full bg-background pb-20 md:pb-24 glass transition-all duration-300 pt-16 md:pt-0">
         <Outlet />
       </main>
-      <nav className="fixed z-30 left-0 right-0 bottom-0 md:bottom-4 border-t border-border flex items-stretch justify-center h-16 md:h-16 bg-background md:bg-transparent">
+      <nav className="fixed z-30 left-0 right-0 bottom-0 md:bottom-4 border-t border-border flex items-stretch justify-center h-16 md:h-16 bg-background md:bg-transparent rounded-t-2xl md:rounded-2xl">
         <div className="grid grid-cols-4 w-full max-w-full md:max-w-2xl mx-auto h-full">
           {TABS.map((tab) => {
             const isActive = location.pathname.startsWith(tab.path);
@@ -55,7 +55,7 @@ export default function BottomTabsLayout() {
                 className={`
                   flex flex-col items-center justify-center gap-0.5 md:gap-1 h-full transition-colors 
                   ${isActive ? "text-blue-300 font-bold bg-glass/80 shadow-inner glass" : "text-gray-300 hover:bg-glass/40"}
-                  rounded-none md:rounded-full mx-0 md:mx-2 my-0 md:my-2 overflow-hidden
+                  rounded-t-2xl md:rounded-2xl mx-0 md:mx-2 my-0 md:my-2 overflow-hidden
                   `}
                 aria-current={isActive ? "page" : undefined}
                 style={{
