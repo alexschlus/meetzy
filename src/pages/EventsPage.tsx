@@ -67,6 +67,7 @@ export default function EventsPage() {
     queryKey: ["events"],
     queryFn: async () => {
       if (!user) return [];
+      console.log("Fetching events for user:", user.id);
       const { data, error } = await supabase
         .from("events")
         .select(`
@@ -75,7 +76,11 @@ export default function EventsPage() {
         `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching events:", error);
+        throw error;
+      }
+      console.log("Fetched events:", data);
       return data as SupabaseEvent[];
     },
     enabled: !!user,
@@ -83,9 +88,10 @@ export default function EventsPage() {
 
   // Fetch events where user is invited
   const { data: invitedEvents = [], refetch: refetchInvitations } = useQuery({
-    queryKey: ["invited-events"],
+    queryKey: ["invited-events", user?.id],
     queryFn: async () => {
       if (!user) return [];
+      console.log("Fetching invited events for user:", user.id);
       const { data, error } = await supabase
         .from("events")
         .select(`
@@ -95,17 +101,26 @@ export default function EventsPage() {
         .contains("invited_users", [user.id])
         .neq("user_id", user.id)
         .order("created_at", { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching invited events:", error);
+        throw error;
+      }
+      console.log("Fetched invited events:", data);
       return data as SupabaseEvent[];
     },
     enabled: !!user,
+    refetchInterval: 30000, // Refetch every 30 seconds to check for new invitations
   });
 
   // Filter pending invitations (not yet responded to)
   const pendingInvitations = invitedEvents.filter(event => {
     const responses = event.invitation_responses || {};
-    return !responses[user?.id];
+    const hasResponded = responses[user?.id];
+    console.log(`Event ${event.title} - User response:`, hasResponded);
+    return !hasResponded;
   });
+
+  console.log("Pending invitations:", pendingInvitations);
 
   // Fetch real friends data
   const { data: friendsData = [] } = useQuery({
@@ -144,7 +159,6 @@ export default function EventsPage() {
     }));
   };
 
-  // Helper function to check if an event is expired
   const isEventExpired = (event: SupabaseEvent) => {
     const eventDateTime = new Date(`${event.date}T${event.time}`);
     return eventDateTime < new Date();
@@ -309,13 +323,15 @@ export default function EventsPage() {
       </div>
       
       {isLoading ? (
-        <div>Loading...</div>
+        <div className="text-blue-100/60">Loading...</div>
       ) : (
         <>
           {/* Pending Invitations Section */}
           {pendingInvitations.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 text-blue-200">Pending Invitations</h2>
+              <h2 className="text-2xl font-bold mb-4 text-blue-200">
+                Pending Invitations ({pendingInvitations.length})
+              </h2>
               <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {pendingInvitations.map((event) => (
                   <EventInvitationCard
@@ -328,6 +344,14 @@ export default function EventsPage() {
                   />
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Show message when no invitations */}
+          {pendingInvitations.length === 0 && invitedEvents.length === 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 text-blue-200">Pending Invitations</h2>
+              <div className="text-blue-100/60">No pending invitations.</div>
             </div>
           )}
 
