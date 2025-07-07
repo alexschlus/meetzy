@@ -16,6 +16,7 @@ import {
 import AddEventDialog from "@/components/AddEventDialog";
 import EventDetailsDialog from "@/components/EventDetailsDialog";
 import EventAttendancePoll from "@/components/EventAttendancePoll";
+import EventInvitationCard from "@/components/EventInvitationCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +37,11 @@ type SupabaseEvent = {
   user_id: string;
   created_at: string;
   updated_at: string;
+  invited_users: any;
+  invitation_responses: any;
+  profiles?: {
+    name: string;
+  };
 };
 
 type Profile = {
@@ -63,13 +69,42 @@ export default function EventsPage() {
       if (!user) return [];
       const { data, error } = await supabase
         .from("events")
-        .select("*")
+        .select(`
+          *,
+          profiles:user_id (name)
+        `)
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data as SupabaseEvent[];
     },
     enabled: !!user,
+  });
+
+  // Fetch events where user is invited
+  const { data: invitedEvents = [], refetch: refetchInvitations } = useQuery({
+    queryKey: ["invited-events"],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("events")
+        .select(`
+          *,
+          profiles:user_id (name)
+        `)
+        .contains("invited_users", [user.id])
+        .neq("user_id", user.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as SupabaseEvent[];
+    },
+    enabled: !!user,
+  });
+
+  // Filter pending invitations (not yet responded to)
+  const pendingInvitations = invitedEvents.filter(event => {
+    const responses = event.invitation_responses || {};
+    return !responses[user?.id];
   });
 
   // Fetch real friends data
@@ -115,11 +150,6 @@ export default function EventsPage() {
     return eventDateTime < new Date();
   };
 
-  // Filter events into active and expired
-  const activeEvents = events.filter(event => !isEventExpired(event));
-  const expiredEvents = events.filter(event => isEventExpired(event));
-
-  // Check if user is the owner of the event
   const isEventOwner = (event: SupabaseEvent) => {
     return event.user_id === user?.id;
   };
@@ -161,6 +191,9 @@ export default function EventsPage() {
       toast.error("Failed to leave event");
     }
   };
+
+  const activeEvents = events.filter(event => !isEventExpired(event));
+  const expiredEvents = events.filter(event => isEventExpired(event));
 
   const renderEventCard = (event: SupabaseEvent, isExpired = false) => (
     <Card
@@ -279,6 +312,25 @@ export default function EventsPage() {
         <div>Loading...</div>
       ) : (
         <>
+          {/* Pending Invitations Section */}
+          {pendingInvitations.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 text-blue-200">Pending Invitations</h2>
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {pendingInvitations.map((event) => (
+                  <EventInvitationCard
+                    key={event.id}
+                    event={event}
+                    onUpdate={() => {
+                      refetchInvitations();
+                      refetch();
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Active Events Section */}
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-4 text-blue-200">Active Events</h2>
