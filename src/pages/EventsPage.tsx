@@ -109,7 +109,7 @@ export default function EventsPage() {
       return data as SupabaseEvent[];
     },
     enabled: !!user,
-    refetchInterval: 30000, // Refetch every 30 seconds to check for new invitations
+    refetchInterval: 10000, // Refetch every 10 seconds to check for new invitations
   });
 
   // Filter pending invitations (not yet responded to)
@@ -204,6 +204,13 @@ export default function EventsPage() {
       console.error("Error leaving event:", error);
       toast.error("Failed to leave event");
     }
+  };
+
+  // Handler for when an event is created with invitations
+  const handleEventCreated = async () => {
+    console.log("Event created, refreshing data...");
+    await refetch();
+    await refetchInvitations();
   };
 
   const activeEvents = events.filter(event => !isEventExpired(event));
@@ -319,7 +326,7 @@ export default function EventsPage() {
         Events
       </h1>
       <div className="flex items-center mb-8 gap-2">
-        <AddEventDialog friends={friends} onAdd={() => refetch()} />
+        <AddEventDialog friends={friends} onAdd={handleEventCreated} />
       </div>
       
       {isLoading ? (
