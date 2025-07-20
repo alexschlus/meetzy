@@ -92,29 +92,40 @@ export default function EventsPage() {
     queryFn: async () => {
       if (!user) return [];
       console.log("Fetching invited events for user:", user.id);
+      
+      // Use a more reliable query method - get all events and filter in JavaScript
       const { data, error } = await supabase
         .from("events")
         .select(`
           *,
           profiles:user_id (name)
         `)
-        .contains("invited_users", [user.id])
         .neq("user_id", user.id)
         .order("created_at", { ascending: false });
+        
       if (error) {
         console.error("Error fetching invited events:", error);
         throw error;
       }
-      console.log("Fetched invited events raw data:", data);
-      console.log("Current user ID for comparison:", user.id);
       
-      // Log each event's invited_users for debugging
-      data?.forEach(event => {
-        console.log(`Event "${event.title}" invited_users:`, event.invited_users);
-        console.log(`Event "${event.title}" invitation_responses:`, event.invitation_responses);
-      });
+      console.log("All events fetched:", data);
       
-      return data as SupabaseEvent[];
+      // Filter events where current user is in invited_users array
+      const filteredEvents = data?.filter(event => {
+        const invitedUsers = event.invited_users;
+        // Check if invited_users is an array and includes the user's ID
+        const isInvited = Array.isArray(invitedUsers) && invitedUsers.includes(user.id);
+        console.log(`Event "${event.title}":`, {
+          invitedUsers,
+          userId: user.id,
+          isInvited,
+          isArray: Array.isArray(invitedUsers)
+        });
+        return isInvited;
+      }) || [];
+      
+      console.log("Filtered invited events:", filteredEvents);
+      return filteredEvents as SupabaseEvent[];
     },
     enabled: !!user,
     refetchInterval: 5000, // Refetch every 5 seconds to check for new invitations
@@ -362,11 +373,26 @@ export default function EventsPage() {
             </div>
           )}
 
-          {/* Show message when no invitations */}
-          {pendingInvitations.length === 0 && invitedEvents.length === 0 && (
+          {/* Show debug info and message when no invitations */}
+          {invitedEvents.length === 0 && (
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4 text-blue-200">Pending Invitations</h2>
-              <div className="text-blue-100/60">No pending invitations.</div>
+              <div className="text-blue-100/60">
+                No pending invitations.
+                {user && (
+                  <div className="mt-2 text-xs opacity-50">
+                    Debug: Checking for invitations for user ID: {user.id}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Show when there are invitations but all responded */}
+          {invitedEvents.length > 0 && pendingInvitations.length === 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 text-blue-200">Pending Invitations</h2>
+              <div className="text-blue-100/60">All invitations have been responded to.</div>
             </div>
           )}
 
