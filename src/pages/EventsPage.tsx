@@ -39,6 +39,7 @@ type SupabaseEvent = {
   updated_at: string;
   invited_users: any;
   invitation_responses: any;
+  messages: any;
   profiles?: {
     name: string;
   };
@@ -61,7 +62,6 @@ type Friend = {
 export default function EventsPage() {
   const { user } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<SupabaseEvent | null>(null);
-  const [messages, setMessages] = useState<{[eventId: string]: Array<{sender: string, text: string, timestamp: string}>}>({});
 
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ["events"],
@@ -105,6 +105,7 @@ export default function EventsPage() {
       return userEvents as SupabaseEvent[];
     },
     enabled: !!user,
+    refetchInterval: 3000, // Refetch every 3 seconds for live updates
   });
 
   // Fetch events where user is invited
@@ -192,11 +193,41 @@ export default function EventsPage() {
     };
   });
 
-  const handleSendMessage = (eventId: string, message: {sender: string, text: string, timestamp: string}) => {
-    setMessages(prev => ({
-      ...prev,
-      [eventId]: [...(prev[eventId] || []), message]
-    }));
+  const handleSendMessage = async (eventId: string, message: {sender: string, text: string, timestamp: string}) => {
+    try {
+      // Get current event data to append the new message
+      const { data: eventData, error: fetchError } = await supabase
+        .from("events")
+        .select("messages")
+        .eq("id", eventId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const currentMessages = Array.isArray(eventData?.messages) ? eventData.messages : [];
+      const updatedMessages = [...currentMessages, {
+        sender: message.sender,
+        text: message.text,
+        timestamp: new Date().toISOString(),
+        user_id: user?.id,
+        user_name: user?.email || "Unknown User"
+      }];
+
+      // Update the event with the new message
+      const { error: updateError } = await supabase
+        .from("events")
+        .update({ messages: updatedMessages })
+        .eq("id", eventId);
+
+      if (updateError) throw updateError;
+
+      // Refresh events to get updated messages
+      refetch();
+      toast.success("Message sent!");
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message");
+    }
   };
 
   const isEventExpired = (event: SupabaseEvent) => {
@@ -455,7 +486,7 @@ export default function EventsPage() {
         open={!!selectedEvent}
         onOpenChange={() => setSelectedEvent(null)}
         friends={friends}
-        messages={selectedEvent ? (messages[selectedEvent.id] || []) : []}
+        messages={selectedEvent ? (Array.isArray(selectedEvent.messages) ? selectedEvent.messages : []) : []}
         onSendMessage={(message) => selectedEvent && handleSendMessage(selectedEvent.id, message)}
       />
     </section>

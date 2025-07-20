@@ -52,6 +52,7 @@ export default function EventAttendancePoll({ eventId, pollResponses, onUpdate }
       if (error) throw error;
 
       toast.success("Your response has been recorded!");
+      // Trigger immediate refresh to show updated poll results
       onUpdate();
     } catch (error) {
       console.error("Error updating poll response:", error);

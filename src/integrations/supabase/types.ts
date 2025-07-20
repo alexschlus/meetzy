@@ -24,6 +24,7 @@ export type Database = {
           invitation_responses: Json | null
           invited_users: Json | null
           location: string | null
+          messages: Json | null
           poll_responses: Json | null
           spotify_playlist_url: string | null
           time: string
@@ -40,6 +41,7 @@ export type Database = {
           invitation_responses?: Json | null
           invited_users?: Json | null
           location?: string | null
+          messages?: Json | null
           poll_responses?: Json | null
           spotify_playlist_url?: string | null
           time: string
@@ -56,6 +58,7 @@ export type Database = {
           invitation_responses?: Json | null
           invited_users?: Json | null
           location?: string | null
+          messages?: Json | null
           poll_responses?: Json | null
           spotify_playlist_url?: string | null
           time?: string
