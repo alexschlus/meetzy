@@ -68,20 +68,41 @@ export default function EventsPage() {
     queryFn: async () => {
       if (!user) return [];
       console.log("Fetching events for user:", user.id);
+      
+      // Get all events (both owned and accepted invitations)
       const { data, error } = await supabase
         .from("events")
         .select(`
           *,
           profiles:user_id (name)
         `)
-        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
+        
       if (error) {
         console.error("Error fetching events:", error);
         throw error;
       }
-      console.log("Fetched events:", data);
-      return data as SupabaseEvent[];
+      
+      // Filter to include:
+      // 1. Events created by the user
+      // 2. Events where user has accepted the invitation
+      const userEvents = data?.filter(event => {
+        const isOwner = event.user_id === user.id;
+        const invitationResponse = event.invitation_responses?.[user.id];
+        const hasAccepted = invitationResponse === 'accepted';
+        
+        console.log(`Event "${event.title}":`, {
+          isOwner,
+          invitationResponse,
+          hasAccepted,
+          shouldInclude: isOwner || hasAccepted
+        });
+        
+        return isOwner || hasAccepted;
+      }) || [];
+      
+      console.log("User's events (owned + accepted):", userEvents);
+      return userEvents as SupabaseEvent[];
     },
     enabled: !!user,
   });
