@@ -105,11 +105,19 @@ export default function EventsPage() {
         console.error("Error fetching invited events:", error);
         throw error;
       }
-      console.log("Fetched invited events:", data);
+      console.log("Fetched invited events raw data:", data);
+      console.log("Current user ID for comparison:", user.id);
+      
+      // Log each event's invited_users for debugging
+      data?.forEach(event => {
+        console.log(`Event "${event.title}" invited_users:`, event.invited_users);
+        console.log(`Event "${event.title}" invitation_responses:`, event.invitation_responses);
+      });
+      
       return data as SupabaseEvent[];
     },
     enabled: !!user,
-    refetchInterval: 10000, // Refetch every 10 seconds to check for new invitations
+    refetchInterval: 5000, // Refetch every 5 seconds to check for new invitations
   });
 
   // Filter pending invitations (not yet responded to)

@@ -124,7 +124,23 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
     setIsLoading(true);
     
     try {
-      // Add current user to attendees list
+      // Get user IDs for invited friends by looking up their profiles
+      const invitedUserIds: string[] = [];
+      
+      if (invitees.length > 0) {
+        const { data: profiles, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('name', invitees);
+          
+        if (profileError) {
+          console.error('Error fetching friend profiles:', profileError);
+        } else if (profiles) {
+          invitedUserIds.push(...profiles.map(p => p.id));
+        }
+      }
+
+      // Add current user to attendees list (keeping for backward compatibility)
       const userEmail = user.email || user.id;
       const allAttendees = [userEmail, ...invitees];
 
@@ -139,11 +155,13 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
           spotify_playlist_url: spotifyPlaylistUrl.trim() || null,
           attendees: allAttendees,
           user_id: user.id,
+          invited_users: invitedUserIds, // Save actual user IDs for invitations
+          invitation_responses: {}, // Initialize empty responses object
         });
 
       if (error) throw error;
 
-      toast.success("Event created successfully!");
+      toast.success(`Event created successfully! ${invitedUserIds.length > 0 ? `Invitations sent to ${invitedUserIds.length} friends.` : ''}`);
       
       // Reset form
       setTitle("");
