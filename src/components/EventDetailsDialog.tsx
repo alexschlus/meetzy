@@ -43,6 +43,7 @@ type EventDetailsDialogProps = {
   friends: Friend[];
   messages: Message[];
   onSendMessage: (msg: Message) => void;
+  pollComponent?: React.ReactNode;
 };
 
 export default function EventDetailsDialog({
@@ -52,6 +53,7 @@ export default function EventDetailsDialog({
   friends,
   messages,
   onSendMessage,
+  pollComponent,
 }: EventDetailsDialogProps) {
   const [newMsg, setNewMsg] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -162,6 +164,11 @@ export default function EventDetailsDialog({
                 ))}
               </div>
             </div>
+            {pollComponent && (
+              <div className="mt-4">
+                {pollComponent}
+              </div>
+            )}
           </div>
           <div className="flex flex-col h-64">
             <div className="flex items-center gap-2 mb-2 font-bold text-base">

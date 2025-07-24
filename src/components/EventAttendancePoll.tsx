@@ -18,9 +18,10 @@ type EventAttendancePollProps = {
   eventId: string;
   pollResponses: PollResponse[];
   onUpdate: () => void;
+  showDetails?: boolean;
 };
 
-export default function EventAttendancePoll({ eventId, pollResponses, onUpdate }: EventAttendancePollProps) {
+export default function EventAttendancePoll({ eventId, pollResponses, onUpdate, showDetails = false }: EventAttendancePollProps) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -69,7 +70,15 @@ export default function EventAttendancePoll({ eventId, pollResponses, onUpdate }
     return { yes, no, maybe };
   };
 
+  const getResponsesByType = () => {
+    const yes = pollResponses.filter(r => r.response === "yes");
+    const no = pollResponses.filter(r => r.response === "no");
+    const maybe = pollResponses.filter(r => r.response === "maybe");
+    return { yes, no, maybe };
+  };
+
   const counts = getResponseCounts();
+  const responsesByType = getResponsesByType();
 
   return (
     <Card className="bg-glass border border-border shadow-glass rounded-xl">
@@ -117,6 +126,48 @@ export default function EventAttendancePoll({ eventId, pollResponses, onUpdate }
             <p className="text-blue-100/70 text-sm">
               Your response: <span className="font-semibold capitalize">{userResponse.response}</span>
             </p>
+          )}
+          
+          {showDetails && pollResponses.length > 0 && (
+            <div className="mt-4 space-y-2 border-t border-border pt-3">
+              <h4 className="text-blue-50 font-semibold text-sm">Poll Results:</h4>
+              
+              {responsesByType.yes.length > 0 && (
+                <div>
+                  <p className="text-green-400 font-medium text-sm flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    YES:
+                  </p>
+                  <p className="text-blue-100/80 text-sm ml-4">
+                    {responsesByType.yes.map(r => r.user_email.split('@')[0]).join(', ')}
+                  </p>
+                </div>
+              )}
+              
+              {responsesByType.no.length > 0 && (
+                <div>
+                  <p className="text-red-400 font-medium text-sm flex items-center gap-1">
+                    <XCircle className="w-3 h-3" />
+                    NO:
+                  </p>
+                  <p className="text-blue-100/80 text-sm ml-4">
+                    {responsesByType.no.map(r => r.user_email.split('@')[0]).join(', ')}
+                  </p>
+                </div>
+              )}
+              
+              {responsesByType.maybe.length > 0 && (
+                <div>
+                  <p className="text-yellow-400 font-medium text-sm flex items-center gap-1">
+                    <HelpCircle className="w-3 h-3" />
+                    MAYBE:
+                  </p>
+                  <p className="text-blue-100/80 text-sm ml-4">
+                    {responsesByType.maybe.map(r => r.user_email.split('@')[0]).join(', ')}
+                  </p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </CardContent>

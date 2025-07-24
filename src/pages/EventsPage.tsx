@@ -488,6 +488,14 @@ export default function EventsPage() {
         friends={friends}
         messages={selectedEvent ? (Array.isArray(selectedEvent.messages) ? selectedEvent.messages : []) : []}
         onSendMessage={(message) => selectedEvent && handleSendMessage(selectedEvent.id, message)}
+        pollComponent={selectedEvent && (
+          <EventAttendancePoll
+            eventId={selectedEvent.id}
+            pollResponses={Array.isArray(selectedEvent.poll_responses) ? selectedEvent.poll_responses : []}
+            onUpdate={refetch}
+            showDetails={true}
+          />
+        )}
       />
     </section>
   );
