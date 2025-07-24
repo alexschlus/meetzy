@@ -19,13 +19,15 @@ type EventAttendancePollProps = {
   pollResponses: PollResponse[];
   onUpdate: () => void;
   showDetails?: boolean;
+  eventCreatorId: string;
 };
 
-export default function EventAttendancePoll({ eventId, pollResponses, onUpdate, showDetails = false }: EventAttendancePollProps) {
+export default function EventAttendancePoll({ eventId, pollResponses, onUpdate, showDetails = false, eventCreatorId }: EventAttendancePollProps) {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const userResponse = pollResponses.find(response => response.user_id === user?.id);
+  const isEventCreator = user?.id === eventCreatorId;
 
   const handleVote = async (response: "yes" | "no" | "maybe") => {
     if (!user) return;
@@ -90,39 +92,50 @@ export default function EventAttendancePoll({ eventId, pollResponses, onUpdate, 
       </CardHeader>
       <CardContent className="pt-0">
         <div className="space-y-3">
-          <div className="flex flex-col gap-2">
-            <Button
-              variant={userResponse?.response === "yes" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleVote("yes")}
-              disabled={isLoading}
-              className="flex items-center justify-start gap-2 w-full"
-            >
-              <CheckCircle className="w-4 h-4" />
-              Yes ({counts.yes})
-            </Button>
-            <Button
-              variant={userResponse?.response === "no" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleVote("no")}
-              disabled={isLoading}
-              className="flex items-center justify-start gap-2 w-full"
-            >
-              <XCircle className="w-4 h-4" />
-              No ({counts.no})
-            </Button>
-            <Button
-              variant={userResponse?.response === "maybe" ? "default" : "outline"}
-              size="sm"
-              onClick={() => handleVote("maybe")}
-              disabled={isLoading}
-              className="flex items-center justify-start gap-2 w-full"
-            >
-              <HelpCircle className="w-4 h-4" />
-              Maybe ({counts.maybe})
-            </Button>
-          </div>
-          {userResponse && (
+          {isEventCreator ? (
+            <div className="text-center py-4">
+              <p className="text-blue-100/70 text-sm">
+                As the event creator, you cannot participate in the poll.
+              </p>
+              <p className="text-blue-50 text-sm mt-2 font-medium">
+                Poll Results: {counts.yes + counts.no + counts.maybe} responses
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Button
+                variant={userResponse?.response === "yes" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleVote("yes")}
+                disabled={isLoading}
+                className="flex items-center justify-start gap-2 w-full"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Yes ({counts.yes})
+              </Button>
+              <Button
+                variant={userResponse?.response === "no" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleVote("no")}
+                disabled={isLoading}
+                className="flex items-center justify-start gap-2 w-full"
+              >
+                <XCircle className="w-4 h-4" />
+                No ({counts.no})
+              </Button>
+              <Button
+                variant={userResponse?.response === "maybe" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleVote("maybe")}
+                disabled={isLoading}
+                className="flex items-center justify-start gap-2 w-full"
+              >
+                <HelpCircle className="w-4 h-4" />
+                Maybe ({counts.maybe})
+              </Button>
+            </div>
+          )}
+          {!isEventCreator && userResponse && (
             <p className="text-blue-100/70 text-sm">
               Your response: <span className="font-semibold capitalize">{userResponse.response}</span>
             </p>

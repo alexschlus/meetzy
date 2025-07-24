@@ -21,6 +21,7 @@ type Event = {
   description: string;
   attendees: string[];
   spotify_playlist_url?: string;
+  creatorName?: string;
 };
 
 type Friend = {
@@ -103,6 +104,12 @@ export default function EventDetailsDialog({
         </DialogHeader>
         <section className="grid md:grid-cols-2 gap-5">
           <div>
+            {event.creatorName && (
+              <div className="mb-4 p-3 bg-blue-50/10 rounded-lg border border-blue-300/20">
+                <span className="text-sm font-semibold text-blue-300">Event Creator:</span>
+                <span className="ml-2 text-blue-100">{event.creatorName}</span>
+              </div>
+            )}
             <div className="mb-2">
               <span className="text-sm font-semibold text-muted-foreground">Date:</span>
               <span className="ml-2">{format(new Date(event.date), "dd/MM/yyyy")}</span>

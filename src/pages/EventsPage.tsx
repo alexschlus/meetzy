@@ -295,6 +295,12 @@ export default function EventsPage() {
       <CardHeader className="pb-4">
         <div className="flex justify-between items-start">
           <div>
+            <div className="flex items-center gap-2 mb-2">
+              <User className="w-4 h-4 text-blue-300" />
+              <span className="text-blue-300 text-sm font-medium">
+                Created by: {event.profiles?.name || 'Unknown User'}
+              </span>
+            </div>
             <CardTitle className="text-blue-50 font-bold">{event.title}</CardTitle>
             <CardDescription className="text-blue-100/70">
               {format(new Date(event.date), "dd/MM/yyyy")} - {event.time}
@@ -373,6 +379,7 @@ export default function EventsPage() {
               eventId={event.id}
               pollResponses={Array.isArray(event.poll_responses) ? event.poll_responses : []}
               onUpdate={refetch}
+              eventCreatorId={event.user_id}
             />
           </div>
         )}
@@ -481,7 +488,8 @@ export default function EventsPage() {
           location: selectedEvent.location || "",
           description: selectedEvent.description || "",
           attendees: Array.isArray(selectedEvent.attendees) ? selectedEvent.attendees : [],
-          spotify_playlist_url: selectedEvent.spotify_playlist_url || undefined
+          spotify_playlist_url: selectedEvent.spotify_playlist_url || undefined,
+          creatorName: selectedEvent.profiles?.name || 'Unknown User'
         } : null}
         open={!!selectedEvent}
         onOpenChange={() => setSelectedEvent(null)}
@@ -494,6 +502,7 @@ export default function EventsPage() {
             pollResponses={Array.isArray(selectedEvent.poll_responses) ? selectedEvent.poll_responses : []}
             onUpdate={refetch}
             showDetails={true}
+            eventCreatorId={selectedEvent.user_id}
           />
         )}
       />
