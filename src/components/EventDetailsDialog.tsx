@@ -85,10 +85,18 @@ export default function EventDetailsDialog({
   // Ensure attendees is always an array
   const safeAttendees = Array.isArray(event.attendees) ? event.attendees : [];
 
-  // Find profile data for attendees based on user ID matching
-  const attendeeProfiles = safeAttendees.map((userId) =>
-    profiles.find((p) => p.id === userId)
-  );
+  // Find profile data for attendees - handle both user IDs (new format) and emails/names (old format)
+  const attendeeProfiles = safeAttendees.map((attendee) => {
+    // First try to match by user ID (new format)
+    let profile = profiles.find((p) => p.id === attendee);
+    
+    // If no match, try to match by email or name (old format for backward compatibility)
+    if (!profile) {
+      profile = profiles.find((p) => p.email === attendee || p.name === attendee);
+    }
+    
+    return profile;
+  });
 
   // Demo: User is "You"
   const sendMessage = (e: React.FormEvent) => {
