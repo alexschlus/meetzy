@@ -159,15 +159,15 @@ export default function EventDetailsDialog({
               <div className="flex flex-wrap gap-3 mt-2">
                 {attendeeProfiles.map((profile, i) => (
                   <div key={profile?.id || safeAttendees[i]} className="flex flex-col items-center gap-1">
-                    {profile ? (
+                    {profile && profile.avatar ? (
                       <img
-                        src={profile.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`}
+                        src={profile.avatar}
                         className="w-8 h-8 rounded-full border object-cover"
                         alt={profile.name}
                       />
                     ) : (
                       <span className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                        {safeAttendees[i] ? safeAttendees[i][0] : "?"}
+                        {profile?.name?.[0] || safeAttendees[i]?.[0] || "?"}
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground text-center max-w-[60px] truncate">
