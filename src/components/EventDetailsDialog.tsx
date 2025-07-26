@@ -156,27 +156,24 @@ export default function EventDetailsDialog({
             )}
             <div className="mb-2">
               <span className="text-sm font-semibold text-muted-foreground">Attendees:</span>
-              <div className="flex items-center gap-2 mt-2 flex-wrap">
-                {attendeeProfiles.map((profile, i) => profile ? (
-                  <img
-                    key={profile.id}
-                    src={profile.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`}
-                    className="w-7 h-7 rounded-full border object-cover"
-                    alt={profile.name}
-                    title={profile.name}
-                  />
-                ) : (
-                  <span
-                    className="w-7 h-7 flex items-center justify-center bg-blue-100 text-blue-700 rounded-full text-xs font-medium"
-                    key={safeAttendees[i]}
-                  >
-                    {safeAttendees[i] ? safeAttendees[i][0] : "?"}
-                  </span>
-                ))}
-              </div>
-              <div className="mt-2 text-xs text-gray-500 flex flex-wrap gap-2">
-                {safeAttendees.map((name) => (
-                  <span key={name}>{name}</span>
+              <div className="flex flex-wrap gap-3 mt-2">
+                {attendeeProfiles.map((profile, i) => (
+                  <div key={profile?.id || safeAttendees[i]} className="flex flex-col items-center gap-1">
+                    {profile ? (
+                      <img
+                        src={profile.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`}
+                        className="w-8 h-8 rounded-full border object-cover"
+                        alt={profile.name}
+                      />
+                    ) : (
+                      <span className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                        {safeAttendees[i] ? safeAttendees[i][0] : "?"}
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground text-center max-w-[60px] truncate">
+                      {profile?.name || safeAttendees[i]}
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
