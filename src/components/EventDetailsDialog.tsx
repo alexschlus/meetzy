@@ -85,9 +85,9 @@ export default function EventDetailsDialog({
   // Ensure attendees is always an array
   const safeAttendees = Array.isArray(event.attendees) ? event.attendees : [];
 
-  // Find profile data for attendees based on name matching
-  const attendeeProfiles = safeAttendees.map((name) =>
-    profiles.find((p) => p.name === name)
+  // Find profile data for attendees based on user ID matching
+  const attendeeProfiles = safeAttendees.map((userId) =>
+    profiles.find((p) => p.id === userId)
   );
 
   // Demo: User is "You"

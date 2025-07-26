@@ -271,8 +271,7 @@ export default function EventsPage() {
   const handleLeaveEvent = async (event: SupabaseEvent) => {
     try {
       const currentAttendees = Array.isArray(event.attendees) ? event.attendees : [];
-      const userProfile = user?.email || user?.id || "You";
-      const updatedAttendees = currentAttendees.filter(attendee => attendee !== userProfile);
+      const updatedAttendees = currentAttendees.filter(attendeeId => attendeeId !== user?.id);
 
       const { error } = await supabase
         .from("events")

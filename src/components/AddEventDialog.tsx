@@ -140,9 +140,8 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
         }
       }
 
-      // Add current user to attendees list (keeping for backward compatibility)
-      const userEmail = user.email || user.id;
-      const allAttendees = [userEmail, ...invitees];
+      // Add current user ID to attendees list
+      const allAttendees = [user.id, ...invitedUserIds];
 
       const { error } = await supabase
         .from("events")
@@ -153,7 +152,7 @@ export default function AddEventDialog({ friends, onAdd }: AddEventDialogProps) 
           location,
           description,
           spotify_playlist_url: spotifyPlaylistUrl.trim() || null,
-          attendees: allAttendees,
+          attendees: allAttendees, // Store user IDs instead of emails/names
           user_id: user.id,
           invited_users: invitedUserIds, // Save actual user IDs for invitations
           invitation_responses: {}, // Initialize empty responses object

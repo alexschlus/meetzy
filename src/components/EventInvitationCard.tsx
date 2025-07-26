@@ -40,9 +40,33 @@ export default function EventInvitationCard({ event, onUpdate }: EventInvitation
         [user.id]: response
       };
 
+      // Get current event data to access attendees
+      const { data: eventData, error: fetchError } = await supabase
+        .from("events")
+        .select("attendees")
+        .eq("id", event.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      let updatedAttendees = Array.isArray(eventData.attendees) ? eventData.attendees : [];
+      
+      if (response === 'accepted') {
+        // Add user to attendees if not already there
+        if (!updatedAttendees.includes(user.id)) {
+          updatedAttendees.push(user.id);
+        }
+      } else {
+        // Remove user from attendees if declining
+        updatedAttendees = updatedAttendees.filter(id => id !== user.id);
+      }
+
       const { error } = await supabase
         .from("events")
-        .update({ invitation_responses: updatedResponses })
+        .update({ 
+          invitation_responses: updatedResponses,
+          attendees: updatedAttendees
+        })
         .eq("id", event.id);
 
       if (error) throw error;
