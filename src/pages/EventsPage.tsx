@@ -163,6 +163,18 @@ export default function EventsPage() {
 
   console.log("Pending invitations:", pendingInvitations);
 
+  // Fetch all profiles for attendee pictures
+  const { data: profiles = [] } = useQuery({
+    queryKey: ["profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   // Fetch real friends data
   const { data: friendsData = [] } = useQuery({
     queryKey: ["friends-for-events"],
@@ -494,6 +506,7 @@ export default function EventsPage() {
         open={!!selectedEvent}
         onOpenChange={() => setSelectedEvent(null)}
         friends={friends}
+        profiles={profiles}
         messages={selectedEvent ? (Array.isArray(selectedEvent.messages) ? selectedEvent.messages : []) : []}
         onSendMessage={(message) => selectedEvent && handleSendMessage(selectedEvent.id, message)}
         pollComponent={selectedEvent && (

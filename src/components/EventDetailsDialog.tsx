@@ -37,11 +37,19 @@ type Message = {
   timestamp: string;
 };
 
+type Profile = {
+  id: string;
+  name: string;
+  avatar: string | null;
+  email: string;
+};
+
 type EventDetailsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event: Event | null;
   friends: Friend[];
+  profiles: Profile[];
   messages: Message[];
   onSendMessage: (msg: Message) => void;
   pollComponent?: React.ReactNode;
@@ -52,6 +60,7 @@ export default function EventDetailsDialog({
   onOpenChange,
   event,
   friends,
+  profiles,
   messages,
   onSendMessage,
   pollComponent,
@@ -76,9 +85,9 @@ export default function EventDetailsDialog({
   // Ensure attendees is always an array
   const safeAttendees = Array.isArray(event.attendees) ? event.attendees : [];
 
-  // Find avatars for attendees
-  const attendeeAvatars = safeAttendees.map((name) =>
-    friends.find((f) => f.name === name)
+  // Find profile data for attendees based on name matching
+  const attendeeProfiles = safeAttendees.map((name) =>
+    profiles.find((p) => p.name === name)
   );
 
   // Demo: User is "You"
@@ -148,13 +157,13 @@ export default function EventDetailsDialog({
             <div className="mb-2">
               <span className="text-sm font-semibold text-muted-foreground">Attendees:</span>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                {attendeeAvatars.map((f, i) => f ? (
+                {attendeeProfiles.map((profile, i) => profile ? (
                   <img
-                    key={f.id}
-                    src={f.avatar}
-                    className="w-7 h-7 rounded-full border"
-                    alt={f.name}
-                    title={f.name}
+                    key={profile.id}
+                    src={profile.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face`}
+                    className="w-7 h-7 rounded-full border object-cover"
+                    alt={profile.name}
+                    title={profile.name}
                   />
                 ) : (
                   <span
