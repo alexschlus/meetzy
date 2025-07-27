@@ -85,7 +85,7 @@ export function useAuth() {
   }, []);
 
   // Signup with better error handling and profile creation verification
-  const signUp = useCallback(async (name: string, email: string, password: string) => {
+  const signUp = useCallback(async (name: string, email: string, password: string, emailConsent: boolean = false) => {
     console.log("Starting signup process for:", email);
     
     // Redirect after email registration - ensure it goes to homepage
@@ -95,7 +95,11 @@ export function useAuth() {
       password,
       options: {
         emailRedirectTo: redirectTo,
-        data: { name },
+        data: { 
+          name,
+          email_consent_given: emailConsent,
+          email_consent_timestamp: emailConsent ? new Date().toISOString() : null
+        },
       }
     });
     

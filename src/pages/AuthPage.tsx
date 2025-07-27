@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import Logo from "@/components/Logo";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +16,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState(""); // for signup
+  const [emailConsent, setEmailConsent] = useState(false); // for signup consent
   const [submitting, setSubmitting] = useState(false);
 
   // Redirect to home if already logged in
@@ -35,7 +38,12 @@ export default function AuthPage() {
         setSubmitting(false);
         return;
       }
-      const error = await signUp(name, email, password);
+      if (!emailConsent) {
+        toast({ title: "Consent required", description: "Please agree to the email communication terms to continue.", variant: "destructive"});
+        setSubmitting(false);
+        return;
+      }
+      const error = await signUp(name, email, password, emailConsent);
       if (error) toast({ title: "Sign up failed", description: error.message || "Could not sign up", variant: "destructive" });
       else {
         toast({ title: "Check your email", description: "Click the link in the email we sent to finish registration."});
@@ -109,6 +117,23 @@ export default function AuthPage() {
             disabled={submitting}
             className="bg-blue-950/20 border-blue-400/30 text-blue-100 placeholder:text-blue-300/60"
           />
+          {view === "signup" && (
+            <div className="flex items-start space-x-2 text-sm">
+              <Checkbox
+                id="email-consent"
+                checked={emailConsent}
+                onCheckedChange={(checked) => setEmailConsent(!!checked)}
+                disabled={submitting}
+                className="border-blue-400/30 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+              />
+              <Label 
+                htmlFor="email-consent" 
+                className="text-blue-200 leading-relaxed cursor-pointer"
+              >
+                I agree that my email address may be used by the site owner for occasional personal updates or promotional communication.
+              </Label>
+            </div>
+          )}
           <Button
             type="submit"
             className="w-full font-bold text-base bg-blue-500 hover:bg-blue-600 text-white"

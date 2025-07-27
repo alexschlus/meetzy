@@ -123,6 +123,8 @@ export type Database = {
           avatar: string | null
           created_at: string
           email: string
+          email_consent_given: boolean | null
+          email_consent_timestamp: string | null
           id: string
           name: string
           updated_at: string
@@ -131,6 +133,8 @@ export type Database = {
           avatar?: string | null
           created_at?: string
           email: string
+          email_consent_given?: boolean | null
+          email_consent_timestamp?: string | null
           id: string
           name: string
           updated_at?: string
@@ -139,6 +143,8 @@ export type Database = {
           avatar?: string | null
           created_at?: string
           email?: string
+          email_consent_given?: boolean | null
+          email_consent_timestamp?: string | null
           id?: string
           name?: string
           updated_at?: string
